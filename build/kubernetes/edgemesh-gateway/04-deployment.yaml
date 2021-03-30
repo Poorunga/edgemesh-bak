@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: edgemesh-gateway
+  namespace: kube-system
+  labels:
+    k8s-app: kubeedge
+    kubeedge: edgemesh-gateway
+spec:
+  selector:
+    matchLabels:
+      k8s-app: kubeedge
+      kubeedge: edgemesh-gateway
+  template:
+    metadata:
+      labels:
+        k8s-app: kubeedge
+        kubeedge: edgemesh-gateway
+    spec:
+      nodeName: ke-edge2
+      hostNetwork: true
+      containers:
+        - name: edgemesh-gateway
+          securityContext:
+            privileged: true
+          image: edgemesh-gateway:0.1
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              cpu: 200m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          volumeMounts:
+            - name: conf
+              mountPath: /etc/kubeedge/config
+            - name: resolv
+              mountPath: /etc/resolv.conf
+            - name: kubeconfig
+              mountPath: /root/.kube/config
+            - name: sqlite-db
+              mountPath: /var/lib/kubeedge/edgecore.db
+      volumes:
+        - name: conf
+          configMap:
+            name: edgemesh-gateway-cfg
+        - name: resolv
+          hostPath:
+            path: /etc/resolv.conf
+        - name: kubeconfig
+          hostPath:
+            path: /root/.kube/config
+        - name: sqlite-db
+          hostPath:
+            path: /var/lib/kubeedge/edgecore.db
+
+

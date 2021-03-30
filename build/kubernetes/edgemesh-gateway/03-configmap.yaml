@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: edgemesh-gateway-cfg
+  namespace: kube-system
+  labels:
+    k8s-app: kubeedge
+    kubeedge: edgemesh-gateway
+data:
+  edgemesh.yaml: |
+
