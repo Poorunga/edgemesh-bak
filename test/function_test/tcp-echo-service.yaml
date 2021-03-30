@@ -20,7 +20,7 @@ spec:
       nodeName: ke-edge2
       containers:
         - name: tcp-echo-container
-          image: go-echo:latest
+          image: cjimti/go-echo:latest
           imagePullPolicy: Always
           env:
             - name: TCP_PORT

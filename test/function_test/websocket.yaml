@@ -9,7 +9,7 @@ spec:
   nodeName: ke-edge2
   containers:
     - name: ws
-      image: websocket:0.2
+      image: kevindavis/websocket:0.1
       imagePullPolicy: IfNotPresent
       ports:
         - containerPort: 8080
