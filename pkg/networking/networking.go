@@ -1,8 +1,6 @@
 package networking
 
 import (
-	"time"
-
 	"k8s.io/klog/v2"
 
 	"github.com/kubeedge/beehive/pkg/core"
@@ -49,8 +47,6 @@ func (n *Networking) Enable() bool {
 
 // Start Networking
 func (n *Networking) Start() {
-	// waiting for Informer to fill DeltaFIFO TODO: remove these codes@Poorunga
-	time.Sleep(2 * time.Second)
 	if pluginConfig.Config.Enable {
 		trafficplugin.Install()
 	}

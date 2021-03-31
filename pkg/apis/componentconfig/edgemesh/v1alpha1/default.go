@@ -25,11 +25,11 @@ func NewDefaultEdgeMeshConfig() *EdgeMeshConfig {
 			APIVersion: path.Join(GroupName, APIVersion),
 		},
 		KubeAPIConfig: &KubeAPIConfig{
-			Master:      "",
+			Master:      "127.0.0.1:10550",
 			ContentType: constants.DefaultKubeContentType,
 			QPS:         constants.DefaultKubeQPS,
 			Burst:       constants.DefaultKubeBurst,
-			KubeConfig:  constants.DefaultKubeConfig,
+			KubeConfig:  "",
 		},
 		DataBase: &DataBase{
 			DriverName: DataBaseDriverName,

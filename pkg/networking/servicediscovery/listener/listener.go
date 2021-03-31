@@ -1,6 +1,7 @@
 package listener
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"strconv"
@@ -10,11 +11,11 @@ import (
 	"unsafe"
 
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/labels"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
 
+	"github.com/kubeedge/edgemesh/pkg/common/client"
 	dbmclient "github.com/kubeedge/edgemesh/pkg/common/dao/client"
-	"github.com/kubeedge/edgemesh/pkg/controller"
 	"github.com/kubeedge/edgemesh/pkg/networking/servicediscovery/config"
 	"github.com/kubeedge/edgemesh/pkg/networking/trafficplugin/protocol"
 	"github.com/kubeedge/edgemesh/pkg/networking/trafficplugin/protocol/http"
@@ -187,12 +188,12 @@ func getProtocol(svcPorts string, port int) (string, string) {
 
 // recoverFromDB gets fakeIP from edge database and assigns them to services after EdgeMesh starts
 func recoverFromDB() {
-	svcs, err := controller.GetServiceLister().Services(v1.NamespaceAll).List(labels.Everything())
+	svcs, err := client.GetKubeClient().CoreV1().Services(v1.NamespaceAll).List(context.Background(), metav1.ListOptions{})
 	if err != nil || svcs == nil {
 		klog.Errorf("[EdgeMesh] list all services from edge database error: %v", err)
 		return
 	}
-	for _, svc := range svcs {
+	for _, svc := range svcs.Items {
 		svcName := svc.Namespace + "." + svc.Name
 		ip, err := dbmClient.Listener().Get(svcName)
 		if err != nil {
@@ -201,12 +202,12 @@ func recoverFromDB() {
 		}
 		ip = strings.Trim(ip, "\"")
 		if len(ip) == 0 {
-			svcPorts := GetSvcPorts(svc, svcName)
+			svcPorts := GetSvcPorts(&svc, svcName)
 			AddServer(svcName, svcPorts)
 			klog.Warningf("[EdgeMesh] listener %s from edge database with no ip", svcName)
 			continue
 		}
-		svcPorts := GetSvcPorts(svc, svcName)
+		svcPorts := GetSvcPorts(&svc, svcName)
 		reserveIP(ip)
 		svcDesc.set(svcName, ip, svcPorts)
 		klog.Infof("[EdgeMesh] get fake ip `%s` --> %s", ip, svcName)
