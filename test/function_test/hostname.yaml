@@ -9,7 +9,7 @@ spec:
   nodeName: ke-edge2
   containers:
     - name: hostname
-      image: serve_hostname:latest
+      image: k8s.gcr.io/serve_hostname:latest
       imagePullPolicy: IfNotPresent
       ports:
         - containerPort: 9376
