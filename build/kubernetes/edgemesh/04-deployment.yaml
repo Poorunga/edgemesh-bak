@@ -17,13 +17,13 @@ spec:
         k8s-app: kubeedge
         kubeedge: edgemesh
     spec:
-      nodeName: ke-cloud
+      nodeName: ke-edge1
       hostNetwork: true
       containers:
         - name: edgemesh
           securityContext:
             privileged: true
-          image: edgemesh:0.1
+          image: poorunga/edgemesh:0.1
           imagePullPolicy: IfNotPresent
           resources:
             limits:

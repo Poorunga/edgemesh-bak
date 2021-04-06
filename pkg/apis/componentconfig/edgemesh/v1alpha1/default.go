@@ -57,7 +57,7 @@ func NewDefaultEdgeMeshConfig() *EdgeMeshConfig {
 					},
 				},
 				ServiceDiscovery: &ServiceDiscovery{
-					Enable:          true,
+					Enable:          false,
 					SubNet:          "9.251.0.0/16",
 					NetworkPrefix:   "9.251.",
 					MaxPoolSize:     65534,
@@ -65,7 +65,7 @@ func NewDefaultEdgeMeshConfig() *EdgeMeshConfig {
 					ListenPort:      40001,
 				},
 				EdgeGateway: &EdgeGateway{
-					Enable: true,
+					Enable: false,
 					NIC:    "*",
 				},
 			},

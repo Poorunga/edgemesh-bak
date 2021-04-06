@@ -8,4 +8,7 @@ metadata:
     kubeedge: edgemesh
 data:
   edgemesh.yaml: |
-
+    modules:
+      networking:
+        serviceDiscovery:
+          enable: true
