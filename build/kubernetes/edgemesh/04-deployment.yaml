@@ -54,5 +54,3 @@ spec:
         - name: sqlite-db
           hostPath:
             path: /var/lib/kubeedge/edgecore.db
-
-
