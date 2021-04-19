@@ -1,4 +1,4 @@
-[![Version](https://img.shields.io/badge/EdgeMesh-0.1-orange)](https://hub.docker.com/r/poorunga/edgemesh)[![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
+[![Version](https://img.shields.io/badge/EdgeMesh-0.1-orange)](https://hub.docker.com/r/poorunga/edgemesh)   [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 
 
@@ -8,7 +8,7 @@ English | [简体中文](./README_ZH.md)
 
 | ![notification](/images/bell-outline-badge.svg) What is NEW! |
 | ------------------------------------------------------------ |
-| April 20th, 2021. Edgemesh v0.1.0 is **RELEASED**! Please check the [README](./README.md) for details. |
+| April 20th, 2021. EdgeMeshv0.1.0 is **RELEASED**! Please check the [README](./README.md) for details. |
 
 
 
@@ -24,16 +24,21 @@ In recent years, as cloud native and microservice architectures have become more
 
 EdgeMesh satisfies the new requirements in edge scenarios (e.g., limited edge resources, unstable edge cloud network, etc.), that is, high availability, high reliability, and extreme lightweight:
 
-- High availability
+- **High availability**
   - Open up the network between edge nodes by using the edge cloud channel in KubeEdge
   - Divide the communication between edge nodes into intra-LAN and cross-LAN
     - Intra-LAN communication: direct access
     - Cross-LAN communication: forwarding through the cloud
-- High reliability (offline scenario)
+- **High reliability (offline scenario)**
   - Both control plane and data plane traffic are delivered through the edge cloud channel
   - EdgeMesh internally implements a lightweight DNS server, thus no longer accessing the cloud DNS
-- Extreme lightweight
+- **Extreme lightweight**
   - Each node has one and only one EdgeMesh, which saves edge resources
+
+#### User value
+
+- For edge devices with limited resources, EdgeMesh provides a lightweight and highly integrated software with service discovery
+- In the scene of Field Edge, compared to the mechanism of coredns + kube-proxy + cni service discovery , users only need to simply deploy an EdgeMesh to finish their goals
 
 
 
@@ -60,6 +65,18 @@ As shwn in figure above, the workflow of EdgeMesh is as following:
 
 
 
+## Principle
+
+To ensure the capability of service discovery in some edge devices with low-version kernels or low-version iptables, EdgeMesh adopts the userspace mode in its implementation. In addition, it also comes with a lightweight DNS server.
+
+- Through the capability of list-watch on the edge of KubeEdge, EdgeMesh monitors the addition, deletion and modification of metadata (e.g., services and endpoints), and then creates iptables rules based on services and endpoints
+- EdgeMesh uses domain names to access services, since fakeIP does NOT be exposed to users. FakeIP is similar to clusterIP, and its CIDR is between the network segment of 9.251.0.0/16 in each node (which will be unified into K8s service network in the future)
+- When client's requests accessing a service reach a node with EdgeMesh, it will enter the kernel's iptables at first
+- The iptables rules previously configured by EdgeMesh will redirect requests, and forward them all to the port 40001 which is occupied by the EdgeMesh process (data packets from kernel mode to user mode)
+- After requests enter the EdgeMesh process, the EdgeMesh process completes the selection of backend Pods (load balancing occurs here), and then sends requests to the host where the Pod is located
+
+
+
 
 ## Functionality
 
@@ -76,7 +93,7 @@ As shwn in figure above, the workflow of EdgeMesh is as following:
 |   External Access    |                     |     `✓`      |
 | Multi-NIC Monitoring |                     |     `✓`      |
 
-Noting：
+**Noting:**
 
 - `✓` Features supported by the EdgeMesh version 
 - `+` Features not available in the EdgeMesh version, but will be supported in subsequent versions
@@ -212,11 +229,11 @@ spec
 
 
 
-## Edgemesh Ingress Gateway
+## EdgeMesh Ingress Gateway
 
-​	Edgemesh ingress gateway provides a ability to access services in external edge nodes.
+EdgeMesh ingress gateway provides a ability to access services in external edge nodes.
 
-![image-20210414152916134](/images/em-004.png)
+![image-20210414152916134](/images/em-ig.png)
 
 #### Deployment
 
