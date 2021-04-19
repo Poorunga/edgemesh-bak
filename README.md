@@ -6,7 +6,7 @@ English | [简体中文](./README_ZH.md)
 
 
 
-| ![notification](docs/img/bell-outline-badge.svg) What is NEW! |
+| ![notification](/images/bell-outline-badge.svg) What is NEW! |
 | ------------------------------------------------------------ |
 | April 20th, 2021. Edgemesh v0.1.0 is **RELEASED**! Please check the [README](./README.md) for details. |
 
@@ -39,7 +39,7 @@ EdgeMesh satisfies the new requirements in edge scenarios (e.g., limited edge re
 
 ## Architecture
 
-![Edgemesh架构图](.\em-arch.jpg)
+![Edgemesh架构图](/images/em-arch.jpg)
 
 As shwn in figure above, the workflow of EdgeMesh is as following:
 
@@ -216,7 +216,7 @@ spec
 
 ​	Edgemesh ingress gateway provides a ability to access services in external edge nodes.
 
-![image-20210414152916134](.\em-004.png)
+![image-20210414152916134](/images/em-004.png)
 
 #### Deployment
 
@@ -269,8 +269,4 @@ If you need support, start with the 'Operation Guidance', and then follow the pr
 
 If you have further questions, feel free to reach out to us in the following ways:
 
-​	KubeEdge群的二维码 ...
-
-​	Bilibili ...
-
-​	Youtube Channel ...
+​	[Bilibili KubeEdge](https://space.bilibili.com/448816706?from=search&seid=10057261257661405253)

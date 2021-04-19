@@ -6,7 +6,7 @@
 
 
 
-| ![notification](docs/img/bell-outline-badge.svg) What is NEW! |
+| ![notification](/images/bell-outline-badge.svg) What is NEW! |
 | ------------------------------------------------------------ |
 | 2021年四月二十日. Edgemesh v0.1.0 **发布**了! 请查看 [README](./README.md) 了解更多细节. |
 
@@ -39,7 +39,7 @@ EdgeMesh满足边缘场景下的新需求（如边缘资源有限，边云网络
 
 ## 架构
 
-![Edgemesh架构图](.\em-arch.jpg)
+![Edgemesh架构图](/images/em-arch.jpg)
 
 如图所示，Edgemesh的工作流如下：
 
@@ -213,7 +213,7 @@ spec
 
 ​	Edgemesh ingress gateway 提供了外部访问集群里服务的能力。
 
-![image-20210414152916134](.\em-004.png)
+![image-20210414152916134](/images/em-004.png)
 
 #### 部署
 
