@@ -67,6 +67,8 @@ As shwn in figure above, the workflow of EdgeMesh is as following:
 
 ## Principle
 
+![](/images/em-principle.png)
+
 To ensure the capability of service discovery in some edge devices with low-version kernels or low-version iptables, EdgeMesh adopts the userspace mode in its implementation. In addition, it also comes with a lightweight DNS server.
 
 - Through the capability of list-watch on the edge of KubeEdge, EdgeMesh monitors the addition, deletion and modification of metadata (e.g., services and endpoints), and then creates iptables rules based on services and endpoints
