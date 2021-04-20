@@ -8,7 +8,7 @@ English | [简体中文](./README_ZH.md)
 
 | ![notification](/images/bell-outline-badge.svg) What is NEW! |
 | ------------------------------------------------------------ |
-| April 20th, 2021. EdgeMeshv0.1.0 is **RELEASED**! Please check the [README](./README.md) for details. |
+| April 20th, 2021. EdgeMesh v0.1.0 is **RELEASED**! Please check the [README](./README.md) for details. |
 
 
 
@@ -43,29 +43,6 @@ EdgeMesh satisfies the new requirements in edge scenarios (e.g., limited edge re
 
 
 ## Architecture
-
-![Edgemesh架构图](/images/em-arch.jpg)
-
-As shwn in figure above, the workflow of EdgeMesh is as following:
-
-- 
-  Client sends a request to server by server’s domain name
-
-- DNS is hijacked to EdgeMesh by iptables rules, then a fake IP returned
-
-- The request is also hijacked to EdgeMesh by iptables rules
-
-- EdgeMesh resolves the request, gets domain name, protocol, request and so on
-
-- The load balancing of EdgeMesh: 
-  - ​	Gets the service name and namespace from the domain name 
-  - ​	Queries backend pods of the service from MetaManager 
-  - ​	Chooses a backend based on the LB strategy 
-- EdgeMesh transports the request to server, waits for a response from server, and then sends the response back to the client
-
-
-
-## Principle
 
 ![](/images/em-principle.png)
 
