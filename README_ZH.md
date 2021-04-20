@@ -42,27 +42,6 @@ EdgeMesh满足边缘场景下的新需求（如边缘资源有限，边云网络
 
 
 
-## 架构
-
-![Edgemesh架构图](/images/em-arch.jpg)
-
-如图所示，Edgemesh的工作流如下：
-
-- 通过服务器域名，客户端向服务器发起请求
-- 根据iptables规则，DNS被劫持到EdgeMesh，并返回一个虚假IP
-
-- 根据iptables规则，请求也被劫持到EdgeMesh
-
-- EdgeMesh解析请求，获得域名，协议和请求等信息，
-
-- EdgeMesh的负载均衡：
-  - 从域名中获得服务名和命名空间
-  - 在MetaManager中，查询该服务的后端Pods
-  - 基于负载均衡策略，选择一个后端Pod
-- EdgeMesh向服务器传输请求，等待服务器的响应，并将响应返回给客户端
-
-
-
 ## 原理
 
 ![](/images/em-principle.png)
