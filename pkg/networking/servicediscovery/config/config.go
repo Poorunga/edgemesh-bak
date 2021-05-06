@@ -16,7 +16,7 @@ var once sync.Once
 type Configure struct {
 	v1alpha1.ServiceDiscovery
 	ListenIP net.IP
-	Listener *net.TCPListener
+	Proxy    *net.TCPListener
 }
 
 func InitConfigure(s *v1alpha1.ServiceDiscovery) {
@@ -41,7 +41,7 @@ func InitConfigure(s *v1alpha1.ServiceDiscovery) {
 			for {
 				ln, err := net.ListenTCP("tcp", listenAddr)
 				if err == nil {
-					Config.Listener = ln
+					Config.Proxy = ln
 					break
 				}
 				klog.Warningf("[EdgeMesh] listen on address %v err: %v", listenAddr, err)

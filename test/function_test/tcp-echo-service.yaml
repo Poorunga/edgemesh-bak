@@ -58,7 +58,6 @@ metadata:
   labels:
     app: tcp-echo-edge
 spec:
-  clusterIP: None
   selector:
     app: tcp-echo-edge
   ports:

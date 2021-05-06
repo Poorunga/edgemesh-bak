@@ -11,7 +11,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/klog/v2"
 
-	"github.com/kubeedge/edgemesh/pkg/common/dao/client"
 	"github.com/kubeedge/edgemesh/pkg/controller"
 	"github.com/kubeedge/edgemesh/pkg/networking/util"
 )
@@ -40,14 +39,12 @@ func init() { registry.InstallServiceDiscovery(EdgeRegistry, NewEdgeServiceDisco
 
 // EdgeServiceDiscovery to represent the object of service center to call the APIs of service center
 type EdgeServiceDiscovery struct {
-	dbmClient client.CoreInterface
-	Name      string
+	Name string
 }
 
 func NewEdgeServiceDiscovery(options registry.Options) registry.ServiceDiscovery {
 	return &EdgeServiceDiscovery{
-		dbmClient: client.NewDBMClient(),
-		Name:      EdgeRegistry,
+		Name: EdgeRegistry,
 	}
 }
 

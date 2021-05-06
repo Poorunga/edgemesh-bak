@@ -21,7 +21,6 @@ metadata:
   name: hostname-svc
   namespace: edgemesh-test
 spec:
-  clusterIP: None
   selector:
     app: hostname-edge
   ports:

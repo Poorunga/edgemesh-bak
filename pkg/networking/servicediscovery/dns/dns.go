@@ -16,7 +16,7 @@ import (
 
 	"github.com/kubeedge/edgemesh/pkg/controller"
 	"github.com/kubeedge/edgemesh/pkg/networking/servicediscovery/config"
-	"github.com/kubeedge/edgemesh/pkg/networking/servicediscovery/listener"
+	"github.com/kubeedge/edgemesh/pkg/networking/servicediscovery/serviceproxy"
 	"github.com/kubeedge/edgemesh/pkg/networking/util"
 )
 
@@ -135,7 +135,7 @@ func recordHandle(que *dnsQuestion, req []byte) (rsp []byte, err error) {
 	// qType should be 1 for ipv4
 	if que.name != nil && que.qType == aRecord {
 		domainName := string(que.name)
-		exist, ip = lookupFromMetaManager(domainName)
+		exist, ip = lookup(domainName)
 	}
 
 	if !exist || que.event == eventUpstream {
@@ -274,17 +274,17 @@ func (q *dnsQuestion) getQName(req []byte, offset uint16) uint16 {
 	}
 }
 
-// lookupFromMetaManager confirms if the listener exists
-func lookupFromMetaManager(serviceURL string) (exist bool, ip string) {
+// lookup confirms if the listener exists
+func lookup(serviceURL string) (exist bool, ip string) {
 	name, namespace := util.SplitServiceKey(serviceURL)
 	s, _ := controller.GetServiceLister().Services(namespace).Get(name)
 	if s != nil {
 		svcName := namespace + "." + name
-		ip := listener.GetServiceServer(svcName)
+		ip := serviceproxy.GetServiceClusterIP(svcName)
 		klog.Infof("[EdgeMesh] dns server parse %s ip %s", serviceURL, ip)
 		return true, ip
 	}
-	klog.Errorf("[EdgeMesh] listener %s is not found in this cluster", serviceURL)
+	klog.Errorf("[EdgeMesh] serviceproxy %s is not found in this cluster", serviceURL)
 	return false, ""
 }
 
@@ -406,10 +406,10 @@ func (h *dnsHeader) setAnswerNum(num uint16) {
 // setRspRCode sets dns response return code
 func (h *dnsHeader) setRspRCode(que *dnsQuestion) {
 	if que.qType != aRecord {
-		h.flags &= (^errNotImplemented)
+		h.flags &= ^errNotImplemented
 		h.flags |= errNotImplemented
 	} else if que.event == eventNxDomain {
-		h.flags &= (^errRefused)
+		h.flags &= ^errRefused
 		h.flags |= errRefused
 	}
 }

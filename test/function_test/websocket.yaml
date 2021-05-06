@@ -21,7 +21,6 @@ metadata:
   name: ws-svc
   namespace: edgemesh-test
 spec:
-  clusterIP: None
   selector:
     app: ws-edge
   ports:

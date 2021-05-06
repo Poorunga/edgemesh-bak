@@ -122,6 +122,8 @@ $ curl 127.0.0.1:10550/api/v1/services
 ​	部署configmap，并创建Istio的用户自定义资源
 
 ```shell
+# 请将03-configmap.yaml里面的subNet配置成kube-apiserver的service-cluster-ip-range的值
+# 你可以在k8s master节点上的/etc/kubernetes/manifests/kube-apiserver.yaml文件中找到这个配置项的值
 $ kubectl apply -f 03-configmap.yaml
 configmap/edgemesh-cfg created
 $ kubectl apply -f istio-crds-simple.yaml

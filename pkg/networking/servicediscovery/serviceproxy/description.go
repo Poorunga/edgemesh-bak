@@ -1,4 +1,4 @@
-package listener
+package serviceproxy
 
 import (
 	"sync"
@@ -8,8 +8,8 @@ var svcDesc *ServiceDescription
 
 type ServiceDescription struct {
 	sync.RWMutex
-	SvcPortsByIP map[string]string // key: fakeIP, value: SvcPorts
-	IPBySvc      map[string]string // key: svcName.svcNamespace, value: fakeIP
+	SvcPortsByIP map[string]string // key: clusterIP, value: SvcPorts
+	IPBySvc      map[string]string // key: svcName.svcNamespace, value: clusterIP
 }
 
 func newServiceDescription() *ServiceDescription {
@@ -51,8 +51,18 @@ func (sd *ServiceDescription) getSvcPorts(ip string) string {
 	return svcPorts
 }
 
-// GetServiceServer returns the proxier IP by given servicediscovery name
-func GetServiceServer(svcName string) string {
+// GetServiceClusterIP returns the proxier IP by given name
+func GetServiceClusterIP(svcName string) string {
 	ip := svcDesc.getIP(svcName)
 	return ip
+}
+
+// AddOrUpdateService add or updates a service
+func AddOrUpdateService(svcName, clusterIP, svcPorts string) {
+	svcDesc.set(svcName, clusterIP, svcPorts)
+}
+
+// DeleteService deletes a service
+func DeleteService(svcName, clusterIP string) {
+	svcDesc.del(svcName, clusterIP)
 }

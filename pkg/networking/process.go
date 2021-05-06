@@ -14,7 +14,7 @@ import (
 	"github.com/kubeedge/edgemesh/pkg/networking/edgegateway"
 	gatewayConfig "github.com/kubeedge/edgemesh/pkg/networking/edgegateway/config"
 	discoveryConfig "github.com/kubeedge/edgemesh/pkg/networking/servicediscovery/config"
-	"github.com/kubeedge/edgemesh/pkg/networking/servicediscovery/listener"
+	"github.com/kubeedge/edgemesh/pkg/networking/servicediscovery/serviceproxy"
 	"github.com/kubeedge/edgemesh/pkg/networking/trafficplugin/loadbalancer/consistenthash"
 )
 
@@ -25,15 +25,14 @@ func handleServiceMessage(msg model.Message) {
 		return
 	}
 	svcName := svc.Namespace + "." + svc.Name
-	svcPorts := listener.GetSvcPorts(svc, svcName)
+	svcPorts := serviceproxy.GetSvcPorts(svc, svcName)
+	clusterIP := svc.Spec.ClusterIP
 	operation := msg.GetOperation()
 	switch operation {
-	case model.InsertOperation:
-		listener.AddServer(svcName, svcPorts)
-	case model.UpdateOperation:
-		listener.UpdateServer(svcName, svcPorts)
+	case model.InsertOperation, model.UpdateOperation:
+		serviceproxy.AddOrUpdateService(svcName, clusterIP, svcPorts)
 	case model.DeleteOperation:
-		listener.DelServer(svcName)
+		serviceproxy.DeleteService(svcName, clusterIP)
 	}
 }
 
