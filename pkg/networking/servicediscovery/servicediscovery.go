@@ -2,14 +2,14 @@ package servicediscovery
 
 import (
 	"github.com/kubeedge/edgemesh/pkg/networking/servicediscovery/dns"
-	"github.com/kubeedge/edgemesh/pkg/networking/servicediscovery/listener"
 	"github.com/kubeedge/edgemesh/pkg/networking/servicediscovery/proxier"
+	"github.com/kubeedge/edgemesh/pkg/networking/servicediscovery/serviceproxy"
 )
 
 // Init init
 func Init() {
-	// init tcp listener
-	listener.Init()
+	// init tcp service proxy
+	serviceproxy.Init()
 	// init iptables
 	proxier.Init()
 	// init dns server
@@ -18,7 +18,7 @@ func Init() {
 
 // Start starts all service discovery components
 func Start() {
-	go listener.StartListener()
+	go serviceproxy.StartServiceProxy()
 	go proxier.StartProxier()
 	go dns.StartDNS()
 }

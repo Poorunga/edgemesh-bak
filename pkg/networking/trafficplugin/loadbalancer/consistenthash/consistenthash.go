@@ -49,7 +49,7 @@ func (s *Strategy) ReceiveData(inv *invocation.Invocation,
 	switch inv.Args.(type) {
 	case *http.Request:
 		hashKey, err = s.getKeyFromHTTP(inv, dr)
-	case []byte:  // tcp
+	case []byte: // tcp
 		hashKey, err = s.getKeyFromTCP(inv, dr)
 	default:
 		err = fmt.Errorf("can't convert invocation.Args")

@@ -1,4 +1,4 @@
-package listener
+package serviceproxy
 
 import (
 	"context"
@@ -15,7 +15,6 @@ import (
 	"k8s.io/klog/v2"
 
 	"github.com/kubeedge/edgemesh/pkg/common/client"
-	dbmclient "github.com/kubeedge/edgemesh/pkg/common/dao/client"
 	"github.com/kubeedge/edgemesh/pkg/networking/servicediscovery/config"
 	"github.com/kubeedge/edgemesh/pkg/networking/trafficplugin/protocol"
 	"github.com/kubeedge/edgemesh/pkg/networking/trafficplugin/protocol/http"
@@ -27,8 +26,7 @@ const (
 )
 
 var (
-	dbmClient dbmclient.CoreInterface
-	once      sync.Once
+	once sync.Once
 )
 
 type sockAddr struct {
@@ -39,23 +37,20 @@ type sockAddr struct {
 func Init() {
 	once.Do(func() {
 		svcDesc = newServiceDescription()
-		// init dao client
-		dbmClient = dbmclient.NewDBMClient()
-		// init fakeIP pool
-		initPool()
-		// recover service discovery meta from edge database and k8s database
-		recoverFromDB()
+		// recover service discovery meta from and k8s
+		fetchServiceInfo()
 	})
 }
 
-func StartListener() {
+func StartServiceProxy() {
 	for {
-		conn, err := config.Config.Listener.Accept()
+		conn, err := config.Config.Proxy.Accept()
 		if err != nil {
 			klog.Warningf("[EdgeMesh] get tcp conn error: %v", err)
 			continue
 		}
 		ip, port, err := realServerAddress(&conn)
+		klog.Info("ip: ", ip, " port: ", port)
 		if err != nil {
 			klog.Warningf("[EdgeMesh] get real destination of tcp conn error: %v", err)
 			conn.Close()
@@ -186,8 +181,8 @@ func getProtocol(svcPorts string, port int) (string, string) {
 	return protoName, svcName
 }
 
-// recoverFromDB gets fakeIP from edge database and assigns them to services after EdgeMesh starts
-func recoverFromDB() {
+// fetchServiceInfo gets ClusterIP from k8s and assigns them to services after EdgeMesh starts
+func fetchServiceInfo() {
 	svcs, err := client.GetKubeClient().CoreV1().Services(v1.NamespaceAll).List(context.Background(), metav1.ListOptions{})
 	if err != nil || svcs == nil {
 		klog.Errorf("[EdgeMesh] list all services from edge database error: %v", err)
@@ -195,22 +190,14 @@ func recoverFromDB() {
 	}
 	for _, svc := range svcs.Items {
 		svcName := svc.Namespace + "." + svc.Name
-		ip, err := dbmClient.Listener().Get(svcName)
-		if err != nil {
-			klog.Errorf("[EdgeMesh] get listener of svc %s from edge database error: %v", svcName, err)
-			continue
-		}
-		ip = strings.Trim(ip, "\"")
-		if len(ip) == 0 {
-			svcPorts := GetSvcPorts(&svc, svcName)
-			AddServer(svcName, svcPorts)
-			klog.Warningf("[EdgeMesh] listener %s from edge database with no ip", svcName)
+		clusterIP := svc.Spec.ClusterIP
+		if len(clusterIP) == 0 {
+			klog.Warningf("[EdgeMesh] service %s clusterIP is null", svcName)
 			continue
 		}
 		svcPorts := GetSvcPorts(&svc, svcName)
-		reserveIP(ip)
-		svcDesc.set(svcName, ip, svcPorts)
-		klog.Infof("[EdgeMesh] get fake ip `%s` --> %s", ip, svcName)
+		svcDesc.set(svcName, clusterIP, svcPorts)
+		klog.Infof("[EdgeMesh] get cluster ip `%s` --> %s", clusterIP, svcName)
 	}
 }
 
@@ -223,14 +210,4 @@ func GetSvcPorts(svc *v1.Service, svcName string) string {
 	}
 	svcPorts += svcName
 	return svcPorts
-}
-
-// reserveIp reserves used fakeIP
-func reserveIP(ip string) {
-	for i, value := range unused {
-		if ip == value {
-			unused = append(unused[:i], unused[i+1:]...)
-			break
-		}
-	}
 }

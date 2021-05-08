@@ -5,6 +5,4 @@ const (
 	ControllerGroupName  = "controller"
 	NetworkingModuleName = "networking"
 	NetworkingGroupName  = "networking"
-	DBManagerModuleName  = "dao"
-	DBManagerGroupName   = "dao"
 )

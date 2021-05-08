@@ -198,7 +198,7 @@ func (srv *Server) Stop() {
 	close(srv.stop)
 	err := srv.listener.Close()
 	if err != nil {
-		klog.Errorf("close listener err: %v", err)
+		klog.Errorf("close Server err: %v", err)
 	}
 	srv.wg.Wait()
 }

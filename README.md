@@ -123,6 +123,8 @@ $ curl 127.0.0.1:10550/api/v1/services
 ​	Deploy configmap, and create Istio's crds
 
 ```shell
+# Please set the subNet to the value of service-cluster-ip-range of kube-apiserver.
+# You can obtain the value from the /etc/kubernetes/manifests/kube-apiserver.yaml file on the master node
 $ kubectl apply -f 03-configmap.yaml
 configmap/edgemesh-cfg created
 $ kubectl apply -f istio-crds-simple.yaml

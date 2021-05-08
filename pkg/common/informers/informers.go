@@ -15,7 +15,6 @@ import (
 
 type newInformer func() cache.SharedIndexInformer
 
-
 type Manager interface {
 	GetK8sInformerFactory() k8sinformers.SharedInformerFactory
 	GetIstioInformerFactory() istioinformers.SharedInformerFactory
@@ -23,12 +22,12 @@ type Manager interface {
 }
 
 type informers struct {
-	defaultResync                time.Duration
-	keClient                     kubernetes.Interface
-	lock                         sync.Mutex
-	informers                    map[string]cache.SharedIndexInformer
-	k8sSharedInformerFactory     k8sinformers.SharedInformerFactory
-	istioSharedInformerFactory   istioinformers.SharedInformerFactory
+	defaultResync              time.Duration
+	keClient                   kubernetes.Interface
+	lock                       sync.Mutex
+	informers                  map[string]cache.SharedIndexInformer
+	k8sSharedInformerFactory   k8sinformers.SharedInformerFactory
+	istioSharedInformerFactory istioinformers.SharedInformerFactory
 }
 
 var globalInformers Manager
@@ -37,11 +36,11 @@ var once sync.Once
 func GetInformersManager() Manager {
 	once.Do(func() {
 		globalInformers = &informers{
-			defaultResync:                0,
-			keClient:                     client.GetKubeClient(),
-			informers:                    make(map[string]cache.SharedIndexInformer),
-			k8sSharedInformerFactory:     k8sinformers.NewSharedInformerFactory(client.GetKubeClient(), 0),
-			istioSharedInformerFactory:   istioinformers.NewSharedInformerFactory(client.GetIstioClient(), 0),
+			defaultResync:              0,
+			keClient:                   client.GetKubeClient(),
+			informers:                  make(map[string]cache.SharedIndexInformer),
+			k8sSharedInformerFactory:   k8sinformers.NewSharedInformerFactory(client.GetKubeClient(), 0),
+			istioSharedInformerFactory: istioinformers.NewSharedInformerFactory(client.GetIstioClient(), 0),
 		}
 	})
 	return globalInformers

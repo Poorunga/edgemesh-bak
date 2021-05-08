@@ -25,7 +25,7 @@ func (h defaultHasher) Sum64(data []byte) uint64 {
 type ServiceInstance struct {
 	Namespace  string
 	Name       string
-	InstanceIP string  // TODO: Now it is host ip, and later it will be pod ip@Poorunga
+	InstanceIP string // TODO: Now it is host ip, and later it will be pod ip@Poorunga
 }
 
 // String gets service instance key

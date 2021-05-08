@@ -22,7 +22,6 @@ const (
 	DefaultGatewayEventBuffer         = 1
 
 	// Resource
-	ResourceTypeListener    = "listener"
 	ResourceTypeService     = "service"
 	ResourceTypeEndpoints   = "endpoints"
 	ResourceDestinationRule = "destinationRule"

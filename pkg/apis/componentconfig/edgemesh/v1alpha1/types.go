@@ -10,9 +10,6 @@ type EdgeMeshConfig struct {
 	// KubeAPIConfig indicates the kubernetes cluster info which cloudCore will connected
 	// +Required
 	KubeAPIConfig *KubeAPIConfig `json:"kubeAPIConfig,omitempty"`
-	// DataBase indicates database info
-	// +Required
-	DataBase *DataBase `json:"database,omitempty"`
 	// Modules indicates edgeMesh modules config
 	// +Required
 	Modules *Modules `json:"modules,omitempty"`
@@ -40,33 +37,12 @@ type KubeAPIConfig struct {
 	KubeConfig string `json:"kubeConfig"`
 }
 
-// DataBase indicates the database info
-type DataBase struct {
-	// DriverName indicates database driver name
-	// default "sqlite3"
-	DriverName string `json:"driverName,omitempty"`
-	// AliasName indicates alias name
-	// default "default"
-	AliasName string `json:"aliasName,omitempty"`
-	// DataSource indicates the data source path
-	// default "/var/lib/kubeedge/edgecore.db"
-	DataSource string `json:"dataSource,omitempty"`
-}
-
 // Modules indicates the modules of EdgeMesh will be use
 type Modules struct {
 	// Networking indicates networking module config
 	Networking *Networking `json:"networking,omitempty"`
 	// Controller indicates controller module config
 	Controller *Controller `json:"controller,omitempty"`
-}
-
-// DBManager indicates dbManager module config
-type DBManager struct {
-	// Enable indicates whether DBManager is enabled,
-	// if set to false (for debugging etc.), skip checking other DBManager configs.
-	// default true
-	Enable bool `json:"enable,omitempty"`
 }
 
 // Networking indicates networking module config
@@ -143,14 +119,8 @@ type ServiceDiscovery struct {
 	// default true
 	Enable bool `json:"enable,omitempty"`
 	// SubNet indicates the subnet of proxier
-	// default "9.251.0.0/16"
+	// default "10.0.0.0/24", equals to k8s default service-cluster-ip-range
 	SubNet string `json:"subNet,omitempty"`
-	// NetworkPrefix indicates the network prefix
-	// default "9.251."
-	NetworkPrefix string `json:"networkPrefix,omitempty"`
-	// MaxPoolSize indicates the max ip pool size
-	// default 65534
-	MaxPoolSize uint16 `json:"maxPoolSize,omitempty"`
 	// ListenInterface indicates the listen interface of EdgeMesh
 	// default "docker0"
 	ListenInterface string `json:"listenInterface,omitempty"`

@@ -8,15 +8,6 @@ import (
 	"github.com/kubeedge/edgemesh/pkg/common/constants"
 )
 
-const (
-	// DataBaseDriverName is sqlite3
-	DataBaseDriverName = "sqlite3"
-	// DataBaseAliasName is default
-	DataBaseAliasName = "default"
-	// DataBaseDataSource is edge.db
-	DataBaseDataSource = "/var/lib/kubeedge/edgecore.db"
-)
-
 // NewDefaultEdgeMeshConfig returns a full EdgeMeshConfig object
 func NewDefaultEdgeMeshConfig() *EdgeMeshConfig {
 	e := &EdgeMeshConfig{
@@ -30,11 +21,6 @@ func NewDefaultEdgeMeshConfig() *EdgeMeshConfig {
 			QPS:         constants.DefaultKubeQPS,
 			Burst:       constants.DefaultKubeBurst,
 			KubeConfig:  "",
-		},
-		DataBase: &DataBase{
-			DriverName: DataBaseDriverName,
-			AliasName:  DataBaseAliasName,
-			DataSource: DataBaseDataSource,
 		},
 		Modules: &Modules{
 			Networking: &Networking{
@@ -58,9 +44,7 @@ func NewDefaultEdgeMeshConfig() *EdgeMeshConfig {
 				},
 				ServiceDiscovery: &ServiceDiscovery{
 					Enable:          false,
-					SubNet:          "9.251.0.0/16",
-					NetworkPrefix:   "9.251.",
-					MaxPoolSize:     65534,
+					SubNet:          "10.0.0.0/24",
 					ListenInterface: "docker0",
 					ListenPort:      40001,
 				},

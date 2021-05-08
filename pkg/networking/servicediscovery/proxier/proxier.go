@@ -45,7 +45,7 @@ func Init() {
 			iptables:     iptInterface,
 			inboundRule:  "-p tcp -d " + config.Config.SubNet + " -i " + config.Config.ListenInterface + " -j " + meshChain,
 			outboundRule: "-p tcp -d " + config.Config.SubNet + " -o " + config.Config.ListenInterface + " -j " + meshChain,
-			dNatRule:     "-p tcp -j DNAT --to-destination " + config.Config.Listener.Addr().String(),
+			dNatRule:     "-p tcp -j DNAT --to-destination " + config.Config.Proxy.Addr().String(),
 		}
 		// read and clean iptables rules
 		proxier.readAndCleanRule()
