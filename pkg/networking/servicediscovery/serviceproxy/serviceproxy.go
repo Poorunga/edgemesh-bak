@@ -37,7 +37,7 @@ type sockAddr struct {
 func Init() {
 	once.Do(func() {
 		svcDesc = newServiceDescription()
-		// recover service discovery meta from edge database and k8s database
+		// recover service discovery meta from and k8s
 		fetchServiceInfo()
 	})
 }
@@ -181,7 +181,7 @@ func getProtocol(svcPorts string, port int) (string, string) {
 	return protoName, svcName
 }
 
-// fetchServiceInfo gets fakeIP from edge database and assigns them to services after EdgeMesh starts
+// fetchServiceInfo gets ClusterIP from k8s and assigns them to services after EdgeMesh starts
 func fetchServiceInfo() {
 	svcs, err := client.GetKubeClient().CoreV1().Services(v1.NamespaceAll).List(context.Background(), metav1.ListOptions{})
 	if err != nil || svcs == nil {
@@ -192,11 +192,12 @@ func fetchServiceInfo() {
 		svcName := svc.Namespace + "." + svc.Name
 		clusterIP := svc.Spec.ClusterIP
 		if len(clusterIP) == 0 {
+			klog.Warningf("[EdgeMesh] service %s clusterIP is null", svcName)
 			continue
 		}
 		svcPorts := GetSvcPorts(&svc, svcName)
 		svcDesc.set(svcName, clusterIP, svcPorts)
-		klog.Infof("[EdgeMesh] get fake ip `%s` --> %s", clusterIP, svcName)
+		klog.Infof("[EdgeMesh] get cluster ip `%s` --> %s", clusterIP, svcName)
 	}
 }
 

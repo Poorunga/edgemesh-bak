@@ -274,7 +274,7 @@ func (q *dnsQuestion) getQName(req []byte, offset uint16) uint16 {
 	}
 }
 
-// lookup confirms if the listener exists
+// lookup confirms if the service exists
 func lookup(serviceURL string) (exist bool, ip string) {
 	name, namespace := util.SplitServiceKey(serviceURL)
 	s, _ := controller.GetServiceLister().Services(namespace).Get(name)
@@ -284,7 +284,7 @@ func lookup(serviceURL string) (exist bool, ip string) {
 		klog.Infof("[EdgeMesh] dns server parse %s ip %s", serviceURL, ip)
 		return true, ip
 	}
-	klog.Errorf("[EdgeMesh] serviceproxy %s is not found in this cluster", serviceURL)
+	klog.Errorf("[EdgeMesh] service %s is not found in this cluster", serviceURL)
 	return false, ""
 }
 
