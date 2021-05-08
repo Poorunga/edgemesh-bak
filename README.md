@@ -82,6 +82,16 @@ To ensure the capability of service discovery in some edge devices with low-vers
 
 ## Operation Guidance
 
+#### Claim
+Edgemesh has borrowed from istio's virtualService, destinationRule, and GateWay in its implementation,
+so there are some requirements in its use:
+1. Due to the lack of the underlying CNI capability, when using the edgemesh capability, 
+   the Pod is required a hostPort.
+2. When using destinationRule, the name of the destinationRule must be equal to the name of the 
+   corresponding Service. Edgemesh will determine the destinationRule in the same namespace according to the name of the service.
+3. Named service ports: Service ports must be named. The port name key/value pairs must have the following syntax: 
+   name: \<protocol>[-\<suffix>]. [istio](https://istio.io/latest/zh/docs/ops/deployment/requirements/)
+
 #### Deployment
 
 ​	At the edge node, close EdgeMesh, open metaserver, and restart edgecore
