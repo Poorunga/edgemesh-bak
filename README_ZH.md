@@ -81,6 +81,12 @@ EdgeMesh满足边缘场景下的新需求（如边缘资源有限，边云网络
 
 ## 操作指导
 
+#### 约定
+edgemesh在实现上借鉴了istio的virtualService、destinationRule、GateWay，所以在使用上有一些要求：
+1. 由于底层CNI能力的缺失，使用edgemesh能力时，要求Pod要开启一个hostPort，例子可以可看 /examples/目录下面的文件
+2. 使用destinationRule时，要求destinationRule的名字与相应的Service的名字要一致，edgemesh会根据service的名字来确定同命名空间下面的destinationRule
+3. 命名的服务端口: Service 的端口必须命名。端口名键值对必须按以下格式：name: \<protocol>[-\<suffix>]。 [istio官网](https://istio.io/latest/zh/docs/ops/deployment/requirements/)
+
 #### 部署
 
 ​	在边缘节点，关闭edgemesh，打开metaserver，并重启edgecore
