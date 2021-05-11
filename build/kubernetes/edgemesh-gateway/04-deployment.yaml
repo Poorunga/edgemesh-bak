@@ -37,10 +37,6 @@ spec:
               mountPath: /etc/kubeedge/config
             - name: resolv
               mountPath: /etc/resolv.conf
-            - name: kubeconfig
-              mountPath: /root/.kube/config
-            - name: sqlite-db
-              mountPath: /var/lib/kubeedge/edgecore.db
       volumes:
         - name: conf
           configMap:
@@ -48,9 +44,3 @@ spec:
         - name: resolv
           hostPath:
             path: /etc/resolv.conf
-        - name: kubeconfig
-          hostPath:
-            path: /root/.kube/config
-        - name: sqlite-db
-          hostPath:
-            path: /var/lib/kubeedge/edgecore.db
