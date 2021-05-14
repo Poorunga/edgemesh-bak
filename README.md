@@ -1,22 +1,14 @@
-[![Version](https://img.shields.io/badge/EdgeMesh-0.1-orange)](https://hub.docker.com/r/poorunga/edgemesh)   [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
-
-
-
 English | [简体中文](./README_ZH.md)
-
-
-
-| ![notification](/images/bell-outline-badge.svg) What is NEW! |
-| ------------------------------------------------------------ |
-| April 20th, 2021. EdgeMesh v0.1.0 is **RELEASED**! Please check the [README](./README.md) for details. |
 
 
 
 ## Introduction
 
-EdgeMesh is a type of service mesh, which is closely related to KubeEdge, and is applicable to the edge scenarios.
+EdgeMesh is closely related to KubeEdge, and provides a simple network solution for the inter-communications between services at edge scenarios.
 
-In recent years, as cloud native and microservice architectures have become more and more popular, the functions of edge nodes have become more and more complete. In this scenario, users can deploy their own applications on edge nodes, and these edge nodes must be accessed by external users through services. For this purpose, EdgeMesh provides users (users running applications in KubeEdge) with external access services running on different nodes, allowing them to access other edge nodes. In addition, EdgeMesh also provides capabilities of load balancing and traffic management for users.
+At present, EdgeMesh does not have a Pod network, so it relies on the connectivity of the host network. In the future, EdgeMesh will realize the capabilities of CNI plug-ins, and realize the Pod network connectivity between edge nodes and nodes on the cloud, or edge nodes across LANs in a  compatible manner with mainstream CNI plug-ins (e.g., flannel / calico, etc). Finally, EdgeMesh can even replace part of its own components with cloud-native components (e.g., replacing [kube-proxy](https://github.com/kubernetes/kube-proxy) to achieve the capabilities of the Cluster IP, replacing [node local dns cache ](https://kubernetes.io/docs/tasks/administer-cluster/nodelocaldns/) to achieve node-level dns capabilities, and replace [envoy](https://github.com/envoyproxy/envoy) to achieve mesh-layer capabilities).
+
+![](/images/em-intro.png)
 
 
 
@@ -44,12 +36,12 @@ EdgeMesh satisfies the new requirements in edge scenarios (e.g., limited edge re
 
 ## Architecture
 
-![](/images/em-principle.png)
+![](/images/em-arch.png)
 
 To ensure the capability of service discovery in some edge devices with low-version kernels or low-version iptables, EdgeMesh adopts the userspace mode in its implementation. In addition, it also comes with a lightweight DNS server.
 
 - Through the capability of list-watch on the edge of KubeEdge, EdgeMesh monitors the addition, deletion and modification of metadata (e.g., services and endpoints), and then creates iptables rules based on services and endpoints
-- EdgeMesh uses domain names to access services, since fakeIP does NOT be exposed to users. FakeIP is similar to clusterIP, and its CIDR is between the network segment of 9.251.0.0/16 in each node (which will be unified into K8s service network in the future)
+- EdgeMesh uses the same ways (e.g., Cluster IP, domain name) as the K8s Service to access services
 - When client's requests accessing a service reach a node with EdgeMesh, it will enter the kernel's iptables at first
 - The iptables rules previously configured by EdgeMesh will redirect requests, and forward them all to the port 40001 which is occupied by the EdgeMesh process (data packets from kernel mode to user mode)
 - After requests enter the EdgeMesh process, the EdgeMesh process completes the selection of backend Pods (load balancing occurs here), and then sends requests to the host where the Pod is located
@@ -82,15 +74,12 @@ To ensure the capability of service discovery in some edge devices with low-vers
 
 ## Operation Guidance
 
-#### Claim
-Edgemesh has borrowed from istio's virtualService, destinationRule, and GateWay in its implementation,
-so there are some requirements in its use:
-1. Due to the lack of the underlying CNI capability, when using the edgemesh capability, 
-   the Pod is required a hostPort.
-2. When using destinationRule, the name of the destinationRule must be equal to the name of the 
-   corresponding Service. Edgemesh will determine the destinationRule in the same namespace according to the name of the service.
-3. Named service ports: Service ports must be named. The port name key/value pairs must have the following syntax: 
-   name: \<protocol>[-\<suffix>]. [istio](https://istio.io/latest/zh/docs/ops/deployment/requirements/)
+#### Constraints
+In its implementation, Edgemesh has borrowed from [istio's](https://istio.io/latest/zh/docs/ops/deployment/requirements/) VirtualService, DestinationRule, and GateWay, so there are some requirements in its use:
+
+- Due to the lack of underlying CNI capabilities, when using edgemesh's capabilities, the Pod is required a hostPort (as shown in following examples)
+- while using DestinationRule, the name of the DestinationRule must be equal to the name of the corresponding Service. Edgemesh will determine the DestinationRule in the same namespace according to the name of the Service
+- Service ports must be named. The key/value pairs of port name must have the following syntax: name: \<protocol>[-\<suffix>]
 
 #### Deployment
 
@@ -133,7 +122,7 @@ $ curl 127.0.0.1:10550/api/v1/services
 Create Istio's crds
 
 ```shell
-$ kubectl apply -f istio-crds-simple.yaml
+$ kubectl apply -f build/istio/istio-crds-simple.yaml
 customresourcedefinition.apiextensions.k8s.io/virtualservices.networking.istio.io created
 customresourcedefinition.apiextensions.k8s.io/destinationrules.networking.istio.io created
 customresourcedefinition.apiextensions.k8s.io/serviceentries.networking.istio.io created
@@ -142,17 +131,16 @@ customresourcedefinition.apiextensions.k8s.io/gateways.networking.istio.io creat
 
 Build EdgeMesh image
 ```shell
-$ docker build edgemesh:0.1 -f build/Dockerfile .
+$ docker build -t edgemesh:0.1 -f build/Dockerfile .
 ```
 
 Deploy EdgeMesh
 ```shell
-
 # Please set the subNet to the value of service-cluster-ip-range of kube-apiserver.
 # You can obtain the value from the /etc/kubernetes/manifests/kube-apiserver.yaml file on the master node
-$ kubectl apply -f 03-configmap.yaml
+$ kubectl apply -f build/kubernetes/edgemesh/03-configmap.yaml
 configmap/edgemesh-cfg created
-$ kubectl apply -f 04-daemonset.yaml
+$ kubectl apply -f build/kubernetes/edgemesh/04-daemonset.yaml
 daemonset.apps/edgemesh created
 ```
 
@@ -163,7 +151,7 @@ daemonset.apps/edgemesh created
 At the edge node, deploy a HTTP container application, and relevant service
 
 ```shell
-$ kubectl apply -f hostname.yaml
+$ kubectl apply -f example/hostname.yaml
 ```
 
 Go to that edge node, use ‘curl’ to access the service, and print out the hostname of the container
@@ -172,14 +160,12 @@ Go to that edge node, use ‘curl’ to access the service, and print out the ho
 $ curl hostname-lb-svc.edgemesh-test:12345
 ```
 
-
-
 **TCP**
 
 At the edge node 1, deploy a TCP container application, and relevant service	
 
 ```shell
-$ kubectl apply -f tcp-echo-service.yaml
+$ kubectl apply -f example/tcp-echo-service.yaml
 ```
 
 At the edge node 1, use ‘telnet’ to access the service		
@@ -188,14 +174,12 @@ At the edge node 1, use ‘telnet’ to access the service
 $ telnet tcp-echo-service.edgemesh-test 2701
 ```
 
-
-
 **Websocket**
 
 At the edge node, deploy a websocket container application, and relevant service	
 
 ```shell
-$ kubectl apply -f websocket-pod-svc.yaml
+$ kubectl apply -f example/websocket-pod-svc.yaml
 ```
 
 Enter the container, and use ./client to access the service
@@ -205,14 +189,12 @@ $ docker exec -it 2a6ae1a490ae bash
 $ ./client --addr ws-svc.edgemesh-test:12348
 ```
 
-
-
 **Load Balance**
 
 Use the 'loadBalancer' in 'DestinationRule' to select LB modes	
 
 ```shell
-$ vim edgemesh-gateway-dr.yaml
+$ vim example/hostname-lb-random.yaml
 spec
 ..
   trafficPolicy:
@@ -229,12 +211,12 @@ EdgeMesh ingress gateway provides a ability to access services in external edge 
 
 ![image-20210414152916134](/images/em-ig.png)
 
-#### Deployment
+#### HTTP GateWay
 
 Create Istio's crds
 
 ```shell
-$ kubectl apply -f istio-crds-simple.yaml
+$ kubectl apply -f build/istio/istio-crds-simple.yaml
 customresourcedefinition.apiextensions.k8s.io/virtualservices.networking.istio.io created
 customresourcedefinition.apiextensions.k8s.io/destinationrules.networking.istio.io created
 customresourcedefinition.apiextensions.k8s.io/serviceentries.networking.istio.io created
@@ -243,7 +225,7 @@ customresourcedefinition.apiextensions.k8s.io/gateways.networking.istio.io creat
 
 Build EdgeMesh image
 ```shell
-$ docker build edgemesh:0.1 -f build/Dockerfile .
+$ docker build -t edgemesh:0.1 -f build/Dockerfile .
 ```
 
 Deploy edgemesh-gateway
@@ -258,9 +240,13 @@ deployment.apps/edgemesh-gateway created
 Create 'gateway' and 'Virtual Service'
 
 ```shell
-$ kubectl apply -f edgemesh-gateway-gw-vsvc.yaml
-gateway.networking.istio.io/edgemesh-gateway created
-virtualservice.networking.istio.io/edgemesh-gateway-vsvc created
+$ kubectl apply -f example/hostname-lb-random-gateway.yaml
+pod/hostname-lb-edge2 created
+pod/hostname-lb-edge3 created
+service/hostname-lb-svc created
+gateway.networking.istio.io/edgemesh-gateway configured
+destinationrule.networking.istio.io/hostname-lb-edge created
+virtualservice.networking.istio.io/edgemesh-gateway-svc created
 ```
 
 Check if the edgemesh-gateway is successfully deployed
@@ -274,7 +260,45 @@ edgemesh-gateway   3m30s
 Finally, use the IP and the port exposed by the Virtual Service to access
 
 ```shell
-$ curl 192.168.0.211:23333
+$ curl 192.168.0.211:12345
+```
+
+#### HTTPS GateWay
+
+Create a test key file
+
+```bash
+$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=kubeedge.io"
+Generating a RSA private key
+............+++++
+.......................................................................................+++++
+writing new private key to 'tls.key'
+-----
+```
+
+Create a 'Secret' according to the key file
+
+```bash
+$ kubectl create secret tls gw-secret --key tls.key --cert tls.crt -n edgemesh-test
+secret/gw-secret created
+```
+
+Create a Secret-bound 'gateway' and routing rules 'Virtual Service'
+
+```bash
+$ kubectl apply -f example/hostname-lb-random-gateway-tls.yaml
+pod/hostname-lb-edge2 created
+pod/hostname-lb-edge3 created
+service/hostname-lb-svc created
+gateway.networking.istio.io/edgemesh-gateway configured
+destinationrule.networking.istio.io/hostname-lb-edge created
+virtualservice.networking.istio.io/edgemesh-gateway-svc created
+```
+
+Finally, use the certificate for a HTTPS access
+
+```bash
+$ curl -k --cert ./tls.crt --key ./tls.key https://192.168.0.129:12345
 ```
 
 
@@ -283,6 +307,5 @@ $ curl 192.168.0.211:23333
 
 If you need support, start with the 'Operation Guidance', and then follow the process that we've outlined
 
-If you have further questions, feel free to reach out to us in the following ways:
+If you have any question, please contact us through the recommended information on [KubeEdge](https://kubeedge.io/en/)
 
-[Bilibili KubeEdge](https://space.bilibili.com/448816706?from=search&seid=10057261257661405253)

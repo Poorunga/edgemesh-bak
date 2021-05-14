@@ -1,58 +1,50 @@
-[![Version](https://img.shields.io/badge/EdgeMesh-0.1-orange)](https://hub.docker.com/r/poorunga/edgemesh)   [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
-
-
-
 [English](./README.md) | [简体中文]
-
-
-
-| ![notification](/images/bell-outline-badge.svg) What is NEW! |
-| ------------------------------------------------------------ |
-| 2021年四月二十日. EdgeMesh v0.1.0 **发布**了! 请查看 [README](./README.md) 了解更多细节. |
 
 
 
 ## 介绍
 
-EdgeMesh是一种服务网格，它与KubeEdge紧密结合，并适用于边缘场景。
+EdgeMesh 与 KubeEdge 紧密结合，并且为边缘场景下的服务互访提供了简单的网络方案。
 
-近年来，随着云原生和微服务架构的越来越流行，边缘节点的功能也越来越完善。在这个场景下，用户能够在边缘节点上部署自己的应用，而这些边缘节点必须通过服务被外部用户所访问。出于这个目的，EdgeMesh向用户（在KubeEdge内运行应用的用户）提供运行在不同节点上的外部访问服务，从而使他们访问其它边缘节点。此外，EdgeMesh还向用户供负载均衡和流量治理的能力。
+目前， EdgeMesh 并不具备 Pod 网络，所以它依赖于主机网络的连通性。未来， EdgeMesh 将会实现 CNI 插件的能力，以兼容主流 CNI 插件（例如 flannel / calico 等）的方式实现边缘节点和云上节点、跨局域网边缘节点之间的 Pod 网络连通。最终， EdgeMesh 甚至可以将部分自身组件替换成云原生组件（例如替换 [kube-proxy](https://github.com/kubernetes/kube-proxy) 实现 Cluster IP 层的能力、替换 [node local dns cache](https://kubernetes.io/docs/tasks/administer-cluster/nodelocaldns/) 实现节点级 dns 的能力、替换 [envoy](https://github.com/envoyproxy/envoy) 实现 mesh 层的能力）。
+
+![](/images/em-intro.png)
 
 
 
 ## 优势
 
-EdgeMesh满足边缘场景下的新需求（如边缘资源有限，边云网络不稳定等），即实现了高可用性，高可靠性，和极致轻量化：
+EdgeMesh 满足边缘场景下的新需求（如边缘资源有限，边云网络不稳定等），即实现了高可用性，高可靠性和极致轻量化：
 
 - **高可用性**
-  - 利用KubeEdge中的边云通道，来打通边缘节点间的网络
+  - 利用 KubeEdge 中的边云通道，来打通边缘节点间的网络
   - 将边缘节点间的通信分为局域网内和跨局域网
     - 局域网内的通信：直接访问
     - 跨局域网的通信：通过云端转发
 - **高可靠性 （离线场景）**
   - 控制面和数据面流量都通过边云通道下发
-  - EdgeMesh内部实现轻量级的DNS服务器，不再访问云端DNS
+  - EdgeMesh 内部实现轻量级的 DNS 服务器，不再访问云端 DNS
 - **极致轻量化**
-  - 每个节点有且仅有一个EdgeMesh，节省边缘资源
+  - 每个节点有且仅有一个 EdgeMesh，节省边缘资源
 
 #### 用户价值
 
-- 对于资源受限的边缘设备，EdgeMesh提供了一个轻量化且具有高集成度的服务发现软件
-- 在现场边缘的场景下，相对于coredns + kube-proxy + cni 这一套服务发现机制，用户只需要简单地部署一个EdgeMesh就能完成目标
+- 对于资源受限的边缘设备，EdgeMesh 提供了一个轻量化且具有高集成度的服务发现软件
+- 在现场边缘的场景下，相对于 coredns + kube-proxy + cni 这一套服务发现机制，用户只需要简单地部署一个 EdgeMesh 就能完成目标
 
 
 
-## 原理
+## 架构
 
-![](/images/em-principle.png)
+![](/images/em-arch.png)
 
-为了保证一些低版本内核、低版本iptables边缘设备的服务发现能力，edgemesh在实现上采用了userspace模式，除此之外还自带了一个轻量级的DNS服务器。
+为了保证一些低版本内核、低版本 iptables 边缘设备的服务发现能力，EdgeMesh 在实现上采用了 userspace 模式，除此之外还自带了一个轻量级的DNS服务器。
 
-- EdgeMesh通过KubeEdge边缘侧list-watch的能力，监听service、endpoints等元数据的增删改，再根据service、endpoints的信息创建iptables规则
-- EdgeMesh使用域名的方式来访问服务，因为fakeIP不会暴露给用户。fakeIP可以理解为clusterIP，每个节点的fakeIP的CIDR都是9.251.0.0/16网段（后续会统一成K8s的service网络）
-- 当client访问服务的请求到达带有EdgeMesh的节点后，它首先会进入内核的iptables
-- EdgeMesh之前配置的iptables规则会将请求重定向，全部转发到EdgeMesh进程的40001端口里（数据包从内核态->用户态）
-- 请求进入EdgeMesh进程后，由EdgeMesh进程完成后端Pod的选择（负载均衡在这里发生），然后将请求发到这个Pod所在的主机上
+- EdgeMesh 通过 KubeEdge 边缘侧 list-watch 的能力，监听service、endpoints等元数据的增删改，再根据 Service、EndPoints 的信息创建iptables规则
+- EdgeMesh 使用与 K8s Service 相同的 Cluster IP 和域名的方式来访问服务
+- 当 client 访问服务的请求到达带有EdgeMesh的节点后，它首先会进入内核的 iptables
+- EdgeMesh 之前配置的 iptables 规则会将请求重定向，全部转发到 EdgeMesh 进程的40001端口里（数据包从内核态->用户态）
+- 请求进入 EdgeMesh 进程后，由 EdgeMesh 进程完成后端 Pod 的选择（负载均衡在这里发生），然后将请求发到这个 Pod 所在的主机上
 
 
 
@@ -73,22 +65,25 @@ EdgeMesh满足边缘场景下的新需求（如边缘资源有限，边云网络
 
 **注：**
 
-- `✓` EdgeMesh版本所支持的功能
-- `+` EdgeMesh版本不具备的功能，但在后续版本中会支持
-- `-` EdgeMesh版本不具备的功能，或已弃用的功能
+- `✓` EdgeMesh 版本所支持的功能
+- `+` EdgeMesh 版本不具备的功能，但在后续版本中会支持
+- `-` EdgeMesh 版本不具备的功能，或已弃用的功能
 
 
 
 ## 操作指导
 #### 约定
-edgemesh在实现上借鉴了istio的virtualService、destinationRule、GateWay，所以在使用上有一些要求：
-1. 由于底层CNI能力的缺失，使用edgemesh能力时，要求Pod要开启一个hostPort，例子可以可看 /examples/目录下面的文件
-2. 使用destinationRule时，要求destinationRule的名字与相应的Service的名字要一致，edgemesh会根据service的名字来确定同命名空间下面的destinationRule
-3. 命名的服务端口: Service 的端口必须命名。端口名键值对必须按以下格式：name: \<protocol>[-\<suffix>]。 [istio官网](https://istio.io/latest/zh/docs/ops/deployment/requirements/)
+EdgeMesh 在实现上借鉴了 [istio](https://istio.io/latest/zh/docs/ops/deployment/requirements/) 的 VirtualService、DestinationRule、GateWay，所以在使用上有一些要求：
+
+- 由于底层CNI能力的缺失，使用 EdgeMesh 能力时，要求 Pod 要开启一个 HostPort，例子可以可看 /examples/ 目录下面的文件
+- 使用 DestinationRule 时，要求 DestinationRule 的名字与相应的 Service 的名字要一致，EdgeMesh 会根据 Service 的名字来确定同命名空间下面的DestinationRule
+- Service 的端口必须命名。端口名键值对必须按以下格式：name: \<protocol>[-\<suffix>]
+
+
 
 #### 部署
 
-在边缘节点，关闭edgemesh，打开metaserver，并重启edgecore
+在边缘节点，关闭 edgemesh，打开 metaserver，并重启 edgecore
 
 ```shell
 $ vim /etc/kubeedge/config/edgecore.yaml
@@ -106,7 +101,7 @@ modules:
 $ systemctl restart edgecore
 ```
 
-在云端，开启dynamic controller模块，并重启cloudcore
+在云端，开启 dynamic controller 模块，并重启 cloudcore
 
 ```shell
 $ vim /etc/kubeedge/config/cloudcore.yaml
@@ -117,67 +112,68 @@ modules:
 ..
 ```
 
-在边缘节点，查看listwatch是否开启
+在边缘节点，查看 listwatch 是否开启
 
 ```shell
 $ curl 127.0.0.1:10550/api/v1/services
 {"apiVersion":"v1","items":[{"apiVersion":"v1","kind":"Service","metadata":{"creationTimestamp":"2021-04-14T06:30:05Z","labels":{"component":"apiserver","provider":"kubernetes"},"name":"kubernetes","namespace":"default","resourceVersion":"147","selfLink":"default/services/kubernetes","uid":"55eeebea-08cf-4d1a-8b04-e85f8ae112a9"},"spec":{"clusterIP":"10.96.0.1","ports":[{"name":"https","port":443,"protocol":"TCP","targetPort":6443}],"sessionAffinity":"None","type":"ClusterIP"},"status":{"loadBalancer":{}}},{"apiVersion":"v1","kind":"Service","metadata":{"annotations":{"prometheus.io/port":"9153","prometheus.io/scrape":"true"},"creationTimestamp":"2021-04-14T06:30:07Z","labels":{"k8s-app":"kube-dns","kubernetes.io/cluster-service":"true","kubernetes.io/name":"KubeDNS"},"name":"kube-dns","namespace":"kube-system","resourceVersion":"203","selfLink":"kube-system/services/kube-dns","uid":"c221ac20-cbfa-406b-812a-c44b9d82d6dc"},"spec":{"clusterIP":"10.96.0.10","ports":[{"name":"dns","port":53,"protocol":"UDP","targetPort":53},{"name":"dns-tcp","port":53,"protocol":"TCP","targetPort":53},{"name":"metrics","port":9153,"protocol":"TCP","targetPort":9153}],"selector":{"k8s-app":"kube-dns"},"sessionAffinity":"None","type":"ClusterIP"},"status":{"loadBalancer":{}}}],"kind":"ServiceList","metadata":{"resourceVersion":"377360","selfLink":"/api/v1/services"}}
 ```
 
-创建Istio的用户自定义资源
+创建 istio 的用户自定义资源
 
 ```shell
-$ kubectl apply -f istio-crds-simple.yaml
+$ kubectl apply -f build/istio/istio-crds-simple.yaml
 customresourcedefinition.apiextensions.k8s.io/virtualservices.networking.istio.io created
 customresourcedefinition.apiextensions.k8s.io/destinationrules.networking.istio.io created
 customresourcedefinition.apiextensions.k8s.io/serviceentries.networking.istio.io created
 customresourcedefinition.apiextensions.k8s.io/gateways.networking.istio.io created
 ```
 
-构建edgemesh容器镜像
+构建 edgemesh 容器镜像
 
 ```shell
 # 在项目目录下执行如下操作
-$ docker build edgemesh:0.1 -f build/Dockerfile .
+$ docker build -t edgemesh:0.1 -f build/Dockerfile .
 ```
 
-部署edgemesh组件
+部署 edgemesh 组件
 
 ```shell
 # 请将03-configmap.yaml里面的subNet配置成kube-apiserver的service-cluster-ip-range的值
 # 你可以在k8s master节点上的/etc/kubernetes/manifests/kube-apiserver.yaml文件中找到这个配置项的值
-$ kubectl apply -f 03-configmap.yaml
+$ kubectl apply -f build/kubernetes/edgemesh/03-configmap.yaml
 configmap/edgemesh-cfg created
-$ kubectl apply -f 04-daemonset.yaml
+$ kubectl apply -f build/kubernetes/edgemesh/04-daemonset.yaml
 daemonset.apps/edgemesh created
 ```
+
+
 
 #### 测试样例
 
 **HTTP协议**
 
-在边缘节点上，部署支持http协议的容器应用和相关服务
+在边缘节点上，部署支持 http 协议的容器应用和相关服务
 
 ```shell
-$ kubectl apply -f hostname.yaml
+$ kubectl apply -f example/hostname.yaml
 ```
 
-到边缘节点上，使用curl去访问相关服务，打印出容器的hostname
+到边缘节点上，使用 curl 去访问相关服务，打印出容器的 hostname
 
 ```shell
 $ curl hostname-lb-svc.edgemesh-test:12345
 ```
 
-
 **TCP协议**
 
-在边缘节点1，部署支持tcp协议的容器应用和相关服务
+在边缘节点1，部署支持 tcp 协议的容器应用和相关服务
 
 ```shell
-$ kubectl apply -f tcp-echo-service.yaml
+$ kubectl apply -f example/tcp-echo-service.yaml
 ```
 
-在边缘节点2，使用telnet去访问相关服务
+在边缘节点2，使用 telnet 去访问相关服务
 
 ```shell
 $ telnet tcp-echo-service.edgemesh-test 2701
@@ -185,13 +181,13 @@ $ telnet tcp-echo-service.edgemesh-test 2701
 
 **Websocket协议**
 
-在边缘节点1，部署支持websocket协议的容器应用和相关服务
+在边缘节点1，部署支持 websocket 协议的容器应用和相关服务
 
 ```shell
-$ kubectl apply -f websocket-pod-svc.yaml
+$ kubectl apply -f example/websocket-pod-svc.yaml
 ```
 
-进入websocket的容器环境，并使用client去访问相关服务
+进入 websocket 的容器环境，并使用 client 去访问相关服务
 
 ```shell
 $ docker exec -it 2a6ae1a490ae bash
@@ -200,10 +196,10 @@ $ ./client --addr ws-svc.edgemesh-test:12348
 
 **负载均衡**
 
-使用DestinationRule中的loadBalancer属性来选择不同的负载均衡模式
+使用 DestinationRule 中的 loadBalancer 属性来选择不同的负载均衡模式
 
 ```shell
-$ vim edgemesh-gateway-dr.yaml
+$ vim example/hostname-lb-random.yaml
 spec
 ..
   trafficPolicy:
@@ -213,49 +209,54 @@ spec
 ```
 
 
+
 ## EdgeMesh Ingress Gateway
 
 EdgeMesh ingress gateway 提供了外部访问集群里服务的能力。
 
 ![image-20210414152916134](/images/em-ig.png)
 
-#### 部署
+#### HTTP网关
 
-创建istio的用户自定义资源
+创建 istio 的用户自定义资源
 
 ```shell
-$ kubectl apply -f istio-crds-simple.yaml
+$ kubectl apply -f build/istio/istio-crds-simple.yaml
 customresourcedefinition.apiextensions.k8s.io/virtualservices.networking.istio.io created
 customresourcedefinition.apiextensions.k8s.io/destinationrules.networking.istio.io created
 customresourcedefinition.apiextensions.k8s.io/serviceentries.networking.istio.io created
 customresourcedefinition.apiextensions.k8s.io/gateways.networking.istio.io created
 ```
 
-构建edgemesh容器镜像
+构建 edgemesh 容器镜像
 
 ```shell
 # 在项目目录下执行如下操作
-$ docker build edgemesh:0.1 -f build/Dockerfile .
+$ docker build -t edgemesh:0.1 -f build/Dockerfile .
 ```
 
-部署edgemesh-gateway
+部署 edgemesh-gateway
 
 ```shell
-$ kubectl apply -f 03-configmap.yaml 
+$ kubectl apply -f build/kubernetes/edgemesh-gateway/03-configmap.yaml 
 configmap/edgemesh-gateway-cfg created
-$ kubectl apply -f 04-deployment.yaml 
+$ kubectl apply -f build/kubernetes/edgemesh-gateway/04-deployment.yaml 
 deployment.apps/edgemesh-gateway created
 ```
 
-创建gateway资源对象，和路由规则Virtual Service
+创建 gateway 资源对象，和路由规则 Virtual Service
 
 ```shell
-$ kubectl apply -f edgemesh-gateway-gw-vsvc.yaml
-gateway.networking.istio.io/edgemesh-gateway created
-virtualservice.networking.istio.io/edgemesh-gateway-vsvc created
+$ kubectl apply -f example/hostname-lb-random-gateway.yaml
+pod/hostname-lb-edge2 created
+pod/hostname-lb-edge3 created
+service/hostname-lb-svc created
+gateway.networking.istio.io/edgemesh-gateway configured
+destinationrule.networking.istio.io/hostname-lb-edge created
+virtualservice.networking.istio.io/edgemesh-gateway-svc created
 ```
 
-查看edgemesh-gateway是否部署成功
+查看 edgemesh-gateway 是否部署成功
 
 ```shell
 $ kubectl get gw -n edgemesh-test
@@ -263,17 +264,53 @@ NAME               AGE
 edgemesh-gateway   3m30s
 ```
 
-最后，使用IP和Virtual Service暴露的端口来进行访问
+最后，使用 IP 和 Virtual Service 暴露的端口来进行访问
 
 ```shell
-$ curl 192.168.0.211:23333
+$ curl 192.168.0.211:12345
 ```
+
+
+
+#### HTTPS网关
+
+创建测试密钥文件
+```bash
+$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=kubeedge.io"
+Generating a RSA private key
+............+++++
+.......................................................................................+++++
+writing new private key to 'tls.key'
+-----
+```
+
+根据密钥文件创建 Secret 资源对象
+```bash
+$ kubectl create secret tls gw-secret --key tls.key --cert tls.crt -n edgemesh-test
+secret/gw-secret created
+```
+
+创建绑定了 Secret 的 gateway 资源对象和路由规则 Virtual Service
+```bash
+$ kubectl apply -f example/hostname-lb-random-gateway-tls.yaml
+pod/hostname-lb-edge2 created
+pod/hostname-lb-edge3 created
+service/hostname-lb-svc created
+gateway.networking.istio.io/edgemesh-gateway configured
+destinationrule.networking.istio.io/hostname-lb-edge created
+virtualservice.networking.istio.io/edgemesh-gateway-svc created
+```
+
+最后，使用证书进行 HTTPS 访问
+```bash
+$ curl -k --cert ./tls.crt --key ./tls.key https://192.168.0.129:12345
+```
+
 
 
 ## 联系方式
 
 如果您需要支持，请从 '操作指导' 开始，然后按照我们概述的流程进行操作。
 
-如果您有任何疑问，请以下方式与我们联系：
+如果您有任何疑问，请通过 [KubeEdge官网](https://kubeedge.io/en/) 推荐的联系方式与我们联系
 
-[Bilibili KubeEdge](https://space.bilibili.com/448816706?from=search&seid=10057261257661405253)
