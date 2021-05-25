@@ -6,9 +6,9 @@ English | [简体中文](./README_ZH.md)
 
 ## Introduction
 
-EdgeMesh is closely related to KubeEdge, and provides a simple network solution for the inter-communications between services at edge scenarios.
+EdgeMesh is a part of KubeEdge, and provides a simple network solution for the inter-communications between services at edge scenarios.
 
-At present, EdgeMesh does not have a Pod network, so it relies on the connectivity of the host network. In the future, EdgeMesh will realize the capabilities of CNI plug-ins, and realize the Pod network connectivity between edge nodes and nodes on the cloud, or edge nodes across LANs in a  compatible manner with mainstream CNI plug-ins (e.g., flannel / calico, etc). Finally, EdgeMesh can even replace part of its own components with cloud-native components (e.g., replacing [kube-proxy](https://kubernetes.io/docs/reference/command-line-tools-reference/kube-proxy/) to achieve the capabilities of the Cluster IP, replacing [node local dns cache ](https://kubernetes.io/docs/tasks/administer-cluster/nodelocaldns/) to achieve node-level dns capabilities, and replace [envoy](https://www.envoyproxy.io/) to achieve mesh-layer capabilities).
+At present, the implementation of EdgeMesh relies on the connectivity of the host network. In the future, EdgeMesh will realize the capabilities of CNI plug-ins, and realize the Pod network connectivity between edge nodes and nodes on the cloud, or edge nodes across LANs in a  compatible manner with mainstream CNI plug-ins (e.g., flannel / calico, etc). Finally, EdgeMesh can even replace part of its own components with cloud-native components (e.g., replacing [kube-proxy](https://kubernetes.io/docs/reference/command-line-tools-reference/kube-proxy/) to achieve the capabilities of the Cluster IP, replacing [node local dns cache ](https://kubernetes.io/docs/tasks/administer-cluster/nodelocaldns/) to achieve node-level dns capabilities, and replace [envoy](https://www.envoyproxy.io/) to achieve mesh-layer capabilities).
 
 ![](/images/em-intro.png)
 
@@ -51,20 +51,74 @@ To ensure the capability of service discovery in some edge devices with low-vers
 
 
 
-## Functionality
+## Key Features and Roadmap
 
-|       Feature        |     Sub-Feature     | Edgemesh 0.1 |
-| :------------------: | :-----------------: | :----------: |
-|  Service Discovery   |                     |     `✓`      |
-|  Traffic Governance  |        HTTP         |     `✓`      |
-|                      |         TCP         |     `✓`      |
-|                      |      Websocket      |     `✓`      |
-|                      |        HTTPS        |     `✓`      |
-|     Load Balance     |       Random        |     `✓`      |
-|                      |     Round Robin     |     `✓`      |
-|                      | Session Persistence |     `✓`      |
-|   External Access    |                     |     `✓`      |
-| Multi-NIC Monitoring |                     |     `✓`      |
+<table>
+	<tr>
+		<th align="center">Feature</th>
+		<th align="center" >Sub-Feature</th>
+		<th align="center">RoadMap</th>  
+	</tr >
+	<tr >
+		<td align="center">Service Discovery</td>
+		<td align="center">/</td>
+		<td align="center">✓</td>
+	</tr>
+	<tr>
+		<td rowspan="4" align="center">Traffic Governance</td>
+	 	<td align="center">HTTP</td>
+		<td align="center">✓</td>
+	</tr>
+	<tr>
+	 	<td align="center">TCP</td>
+		<td align="center">✓</td>
+	</tr>
+	<tr>
+	 	<td align="center">Websocket</td>
+		<td align="center">✓</td>
+	</tr>
+	<tr>
+	 	<td align="center">HTTPS</td>
+		<td align="center">✓</td>
+	</tr>
+	<tr>
+		<td rowspan="3" align="center">Load Balance</td>
+	 	<td align="center">Random</td>
+		<td align="center">✓</td>
+	</tr>
+	<tr>
+	 	<td align="center">Round Robin</td>
+		<td align="center">✓</td>
+	</tr>
+	<tr>
+		<td align="center">Session Persistence</td>
+		<td align="center">✓</td>
+	</tr>
+	<tr>
+		<td align="center">External Access</td>
+		<td align="center">/</td>
+		<td align="center">✓</td>
+	</tr>
+	<tr>
+		<td align="center">Multi-NIC Monitoring</td>
+		<td align="center">/</td>
+		<td align="center">✓</td>
+	</tr>
+  <tr>
+		<td rowspan="2" align="center">Cross-Subnet Communication</td>
+	 	<td align="center">Cross-Cloud Communication</td>
+		<td align="center">+</td>
+	</tr>
+	<tr>
+	 	<td align="center">Cross-LAN E2E Communication</td>
+		<td align="center">+</td>
+	</tr>
+  <tr>
+		<td align="center">Edge CNI</td>
+	 	<td align="center">Cross-Subnet Pod Communication</td>
+		<td align="center">+</td>
+	</tr>
+</table>
 
 **Noting:**
 
@@ -74,12 +128,12 @@ To ensure the capability of service discovery in some edge devices with low-vers
 
 
 
-## Operation Guidance
+## Getting Started
 
-#### Constraints
-In its implementation, Edgemesh has borrowed from [istio's](https://istio.io/latest/zh/docs/ops/deployment/requirements/) VirtualService, DestinationRule, and GateWay, so there are some requirements in its use:
+#### Prerequisites
+Before using EdgeMesh, you need to understand the following prerequisites at first:
 
-- Due to the lack of underlying CNI capabilities, when using edgemesh's capabilities, the Pod is required a hostPort (as shown in following examples)
+- when using edgemesh's capabilities, the Pod is required a hostPort (as shown in following examples)
 - while using DestinationRule, the name of the DestinationRule must be equal to the name of the corresponding Service. Edgemesh will determine the DestinationRule in the same namespace according to the name of the Service
 - Service ports must be named. The key/value pairs of port name must have the following syntax: name: \<protocol>[-\<suffix>]
 
@@ -121,7 +175,7 @@ $ curl 127.0.0.1:10550/api/v1/services
 {"apiVersion":"v1","items":[{"apiVersion":"v1","kind":"Service","metadata":{"creationTimestamp":"2021-04-14T06:30:05Z","labels":{"component":"apiserver","provider":"kubernetes"},"name":"kubernetes","namespace":"default","resourceVersion":"147","selfLink":"default/services/kubernetes","uid":"55eeebea-08cf-4d1a-8b04-e85f8ae112a9"},"spec":{"clusterIP":"10.96.0.1","ports":[{"name":"https","port":443,"protocol":"TCP","targetPort":6443}],"sessionAffinity":"None","type":"ClusterIP"},"status":{"loadBalancer":{}}},{"apiVersion":"v1","kind":"Service","metadata":{"annotations":{"prometheus.io/port":"9153","prometheus.io/scrape":"true"},"creationTimestamp":"2021-04-14T06:30:07Z","labels":{"k8s-app":"kube-dns","kubernetes.io/cluster-service":"true","kubernetes.io/name":"KubeDNS"},"name":"kube-dns","namespace":"kube-system","resourceVersion":"203","selfLink":"kube-system/services/kube-dns","uid":"c221ac20-cbfa-406b-812a-c44b9d82d6dc"},"spec":{"clusterIP":"10.96.0.10","ports":[{"name":"dns","port":53,"protocol":"UDP","targetPort":53},{"name":"dns-tcp","port":53,"protocol":"TCP","targetPort":53},{"name":"metrics","port":9153,"protocol":"TCP","targetPort":9153}],"selector":{"k8s-app":"kube-dns"},"sessionAffinity":"None","type":"ClusterIP"},"status":{"loadBalancer":{}}}],"kind":"ServiceList","metadata":{"resourceVersion":"377360","selfLink":"/api/v1/services"}}
 ```
 
-Build EdgeMesh image
+Build EdgeMesh image (not necessary)
 ```shell
 $ docker build -t edgemesh:0.1 -f build/Dockerfile .
 ```
@@ -135,6 +189,8 @@ configmap/edgemesh-cfg created
 $ kubectl apply -f build/kubernetes/edgemesh/04-daemonset.yaml
 daemonset.apps/edgemesh created
 ```
+
+
 
 #### Test Case
 
@@ -168,7 +224,7 @@ $ telnet tcp-echo-service.edgemesh-test 2701
 
 **Websocket**
 
-At the edge node, deploy a websocket container application, and relevant service	
+At the edge node 1, deploy a websocket container application, and relevant service	
 
 ```shell
 $ kubectl apply -f example/websocket-pod-svc.yaml
@@ -182,6 +238,13 @@ $ ./client --addr ws-svc.edgemesh-test:12348
 ```
 
 **Load Balance**
+
+The capability of load balance needs to add the CRD 'DestinationRule'
+
+```shell
+$ kubectl apply -f build/istio/destinationrule-crd.yaml
+customresourcedefinition.apiextensions.k8s.io/destinationrules.networking.istio.io created
+```
 
 Use the 'loadBalancer' in 'DestinationRule' to select LB modes	
 
@@ -203,21 +266,15 @@ EdgeMesh ingress gateway provides a ability to access services in external edge 
 
 ![image-20210414152916134](/images/em-ig.png)
 
-#### HTTP GateWay
+#### HTTP Gateway
 
-Create Istio's crds
+Create two CRDs: 'Gateway' and 'VirtualService'
 
 ```shell
-$ kubectl apply -f build/istio/istio-crds-simple.yaml
-customresourcedefinition.apiextensions.k8s.io/virtualservices.networking.istio.io created
-customresourcedefinition.apiextensions.k8s.io/destinationrules.networking.istio.io created
-customresourcedefinition.apiextensions.k8s.io/serviceentries.networking.istio.io created
+$ kubectl apply -f build/istio/gateway-crd.yaml
 customresourcedefinition.apiextensions.k8s.io/gateways.networking.istio.io created
-```
-
-Build EdgeMesh image
-```shell
-$ docker build -t edgemesh:0.1 -f build/Dockerfile .
+$ kubectl apply -f build/istio/virtualservice-crd.yaml
+customresourcedefinition.apiextensions.k8s.io/virtualservices.networking.istio.io created
 ```
 
 Deploy edgemesh-gateway
@@ -229,7 +286,7 @@ $ kubectl apply -f 04-deployment.yaml
 deployment.apps/edgemesh-gateway created
 ```
 
-Create 'gateway' and 'Virtual Service'
+Create 'Gateway' and 'VirtualService'
 
 ```shell
 $ kubectl apply -f example/hostname-lb-random-gateway.yaml
@@ -249,7 +306,7 @@ NAME               AGE
 edgemesh-gateway   3m30s
 ```
 
-Finally, use the IP and the port exposed by the Virtual Service to access
+Finally, use the IP and the port exposed by the VirtualService to access
 
 ```shell
 $ curl 192.168.0.211:12345
@@ -275,7 +332,7 @@ $ kubectl create secret tls gw-secret --key tls.key --cert tls.crt -n edgemesh-t
 secret/gw-secret created
 ```
 
-Create a Secret-bound 'gateway' and routing rules 'Virtual Service'
+Create a Secret-bound 'Gateway' and routing rules 'VirtualService'
 
 ```bash
 $ kubectl apply -f example/hostname-lb-random-gateway-tls.yaml
