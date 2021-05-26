@@ -1,4 +1,6 @@
 # EdgeMesh
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FPoorunga%2Fedgemesh.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FPoorunga%2Fedgemesh?ref=badge_shield)
+
 
 English | [简体中文](./README_ZH.md)
 
@@ -365,3 +367,7 @@ If you need support, start with the 'Operation Guidance', and then follow the pr
 
 If you have any question, please contact us through the recommended information on [KubeEdge](https://github.com/kubeedge/kubeedge#contact)
 
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FPoorunga%2Fedgemesh.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FPoorunga%2Fedgemesh?ref=badge_large)
