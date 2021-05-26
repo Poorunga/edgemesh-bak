@@ -38,7 +38,7 @@ EdgeMesh satisfies the new requirements in edge scenarios (e.g., limited edge re
 
 ## Architecture
 
-<img src="./images/em-arch.png" style="zoom:67%;" />
+<img src="./images/em-archi.png" style="zoom:67%;" />
 
 To ensure the capability of service discovery in some edge devices with low-version kernels or low-version iptables, EdgeMesh adopts the userspace mode in its implementation of the traffic proxy. In addition, it also comes with a lightweight DNS resolver. As shown in the figure above, the core components of EdgeMesh include:
 
