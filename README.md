@@ -1,6 +1,4 @@
 # EdgeMesh
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FPoorunga%2Fedgemesh.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FPoorunga%2Fedgemesh?ref=badge_shield)
-
 
 English | [简体中文](./README_ZH.md)
 
@@ -10,13 +8,21 @@ English | [简体中文](./README_ZH.md)
 
 EdgeMesh is a part of KubeEdge, and provides a simple network solution for the inter-communications between services at edge scenarios.
 
-At present, the implementation of EdgeMesh relies on the connectivity of the host network. In the future, EdgeMesh will realize the capabilities of CNI plug-ins, and realize the Pod network connectivity between edge nodes and nodes on the cloud, or edge nodes across LANs in a  compatible manner with mainstream CNI plug-ins (e.g., flannel / calico, etc). Finally, EdgeMesh can even replace part of its own components with cloud-native components (e.g., replacing [kube-proxy](https://kubernetes.io/docs/reference/command-line-tools-reference/kube-proxy/) to achieve the capabilities of the Cluster IP, replacing [node local dns cache ](https://kubernetes.io/docs/tasks/administer-cluster/nodelocaldns/) to achieve node-level dns capabilities, and replace [envoy](https://www.envoyproxy.io/) to achieve mesh-layer capabilities).
-
-<img src="./images/em-intro.png" style="zoom:80%;" />
 
 
+#### Background
 
-## Advantage
+KubeEdge is build based on Kubernetes, extending cloud-native containerized application orchestration capabilities to the edge. However, at the scenario of edge computer, the network topology is more complex. Edge nodes in different areas are offen not interconnected, and the inter-communication of traffic between applications is the primary requirement of the business. For this scenairo, EdgeMesh offers a solution.
+
+
+
+#### Motivation
+
+As the component of data panel on a KubeEdge cluster, EdgeMesh offers sample capacities (e.g, service discovery, traffic proxy, etc.) for applications running on the KubeEdge cluster, thus shielding the complex network topology at the edge scenairo.
+
+
+
+#### Advantage
 
 EdgeMesh satisfies the new requirements in edge scenarios (e.g., limited edge resources, unstable edge cloud network, etc.), that is, high availability, high reliability, and extreme lightweight:
 
@@ -31,36 +37,14 @@ EdgeMesh satisfies the new requirements in edge scenarios (e.g., limited edge re
 - **Extreme lightweight**
   - Each node has one and only one EdgeMesh, which saves edge resources
 
-#### User value
+##### User value
 
 - For edge devices with limited resources, EdgeMesh provides a lightweight and highly integrated software with service discovery
 - In the scene of Field Edge, compared to the mechanism of coredns + kube-proxy + cni service discovery , users only need to simply deploy an EdgeMesh to finish their goals
 
 
 
-## Architecture
-
-<img src="./images/em-archi.png" style="zoom:67%;" />
-
-To ensure the capability of service discovery in some edge devices with low-version kernels or low-version iptables, EdgeMesh adopts the userspace mode in its implementation of the traffic proxy. In addition, it also comes with a lightweight DNS resolver. As shown in the figure above, the core components of EdgeMesh include:
-
-- **Proxier**: Responsible for configuring the kernel's iptables rules, and intercepting requests to the EdgeMesh process
-- **DNS**: Built-in DNS resolver, which resolves the DNS request in the node into a service cluster IP
-- **Traffic**: A traffic forwarding module based on the Go-chassis framework, which is responsible for forwarding traffic between applications
-- **Controller**: Obtains metadata (e.g., Service, Endpoints, Pod, etc.) through the list-watch capability on the edge side of KubeEdge
-
-#### How It Works
-
-- Through the capability of list-watch on the edge of KubeEdge, EdgeMesh monitors the addition, deletion and modification of metadata (e.g., services and endpoints), and then creates iptables rules based on services and endpoints
-- EdgeMesh uses the same ways (e.g., Cluster IP, domain name) as the K8s Service to access services
-- When client's requests accessing a service reach a node with EdgeMesh, it will enter the kernel's iptables at first
-- The iptables rules previously configured by EdgeMesh will redirect requests, and forward them all to the port 40001 which is occupied by the EdgeMesh process (data packets from kernel mode to user mode)
-- After requests enter the EdgeMesh process, the EdgeMesh process completes the selection of backend Pods (load balancing occurs here), and then sends requests to the host where the Pod is located
-
-
-
-
-## Key Features and Roadmap
+#### Key Features and Roadmap
 
 <table align="center">
 	<tr>
@@ -129,11 +113,43 @@ To ensure the capability of service discovery in some edge devices with low-vers
 	</tr>
 </table>
 
+
 **Noting:**
 
 - `✓` Features supported by the EdgeMesh version 
 - `+` Features not available in the EdgeMesh version, but will be supported in subsequent versions
 - `-` Features not available in the EdgeMesh version, or deprecated features
+
+
+
+#### Future Works
+
+<img src="./images/em-intro.png" style="zoom:80%;" />
+
+At present, the implementation of EdgeMesh relies on the connectivity of the host network. In the future, EdgeMesh will realize the capabilities of CNI plug-ins, and realize the Pod network connectivity between edge nodes and nodes on the cloud, or edge nodes across LANs in a  compatible manner with mainstream CNI plug-ins (e.g., flannel / calico, etc). Finally, EdgeMesh can even replace part of its own components with cloud-native components (e.g., replacing [kube-proxy](https://kubernetes.io/docs/reference/command-line-tools-reference/kube-proxy/) to achieve the capabilities of the Cluster IP, replacing [node local dns cache ](https://kubernetes.io/docs/tasks/administer-cluster/nodelocaldns/) to achieve node-level dns capabilities, and replace [envoy](https://www.envoyproxy.io/) to achieve mesh-layer capabilities).
+
+
+
+## Architecture
+
+<img src="./images/em-archi.png" style="zoom:67%;" />
+
+To ensure the capability of service discovery in some edge devices with low-version kernels or low-version iptables, EdgeMesh adopts the userspace mode in its implementation of the traffic proxy. In addition, it also comes with a lightweight DNS resolver. As shown in the figure above, the core components of EdgeMesh include:
+
+- **Proxier**: Responsible for configuring the kernel's iptables rules, and intercepting requests to the EdgeMesh process
+- **DNS**: Built-in DNS resolver, which resolves the DNS request in the node into a service cluster IP
+- **Traffic**: A traffic forwarding module based on the Go-chassis framework, which is responsible for forwarding traffic between applications
+- **Controller**: Obtains metadata (e.g., Service, Endpoints, Pod, etc.) through the list-watch capability on the edge side of KubeEdge
+
+
+
+#### How It Works
+
+- Through the capability of list-watch on the edge of KubeEdge, EdgeMesh monitors the addition, deletion and modification of metadata (e.g., Services and Endpoints), and then creates iptables rules based on Services and Endpoints
+- EdgeMesh uses the same ways (e.g., Cluster IP, domain name) as the K8s Service to access services
+- When client's requests accessing a service reach a node with EdgeMesh, it will enter the kernel's iptables at first
+- The iptables rules previously configured by EdgeMesh will redirect requests, and forward them all to the port 40001 which is occupied by the EdgeMesh process (data packets from kernel mode to user mode)
+- After requests enter the EdgeMesh process, the EdgeMesh process completes the selection of backend Pods (load balancing occurs here), and then sends requests to the host where the Pod is located
 
 
 
@@ -145,6 +161,8 @@ Before using EdgeMesh, you need to understand the following prerequisites at fir
 - when using edgemesh's capabilities, the Pod is required a hostPort (as shown in following examples)
 - while using DestinationRule, the name of the DestinationRule must be equal to the name of the corresponding Service. Edgemesh will determine the DestinationRule in the same namespace according to the name of the Service
 - Service ports must be named. The key/value pairs of port name must have the following syntax: name: \<protocol>[-\<suffix>]
+
+
 
 #### Deployment
 
@@ -177,7 +195,7 @@ modules:
 ..
 ```
 
-At the edge node, check if listwatch works
+At the edge node, check if list-watch works
 
 ```shell
 $ curl 127.0.0.1:10550/api/v1/services
@@ -217,6 +235,8 @@ Go to that edge node, use ‘curl’ to access the service, and print out the ho
 $ curl hostname-lb-svc.edgemesh-test:12345
 ```
 
+
+
 **TCP**
 
 At the edge node 1, deploy a TCP container application, and relevant service	
@@ -230,6 +250,8 @@ At the edge node 1, use ‘telnet’ to access the service
 ```shell
 $ telnet tcp-echo-service.edgemesh-test 2701
 ```
+
+
 
 **Websocket**
 
@@ -245,6 +267,8 @@ Enter the container, and use ./client to access the service
 $ docker exec -it 2a6ae1a490ae bash
 $ ./client --addr ws-svc.edgemesh-test:12348
 ```
+
+
 
 **Load Balance**
 
@@ -321,6 +345,8 @@ Finally, use the IP and the port exposed by the VirtualService to access
 $ curl 192.168.0.211:12345
 ```
 
+
+
 #### HTTPS GateWay
 
 Create a test key file
@@ -367,7 +393,3 @@ If you need support, start with the 'Operation Guidance', and then follow the pr
 
 If you have any question, please contact us through the recommended information on [KubeEdge](https://github.com/kubeedge/kubeedge#contact)
 
-
-
-## License
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FPoorunga%2Fedgemesh.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FPoorunga%2Fedgemesh?ref=badge_large)
