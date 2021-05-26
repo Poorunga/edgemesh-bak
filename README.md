@@ -10,7 +10,7 @@ EdgeMesh is a part of KubeEdge, and provides a simple network solution for the i
 
 At present, the implementation of EdgeMesh relies on the connectivity of the host network. In the future, EdgeMesh will realize the capabilities of CNI plug-ins, and realize the Pod network connectivity between edge nodes and nodes on the cloud, or edge nodes across LANs in a  compatible manner with mainstream CNI plug-ins (e.g., flannel / calico, etc). Finally, EdgeMesh can even replace part of its own components with cloud-native components (e.g., replacing [kube-proxy](https://kubernetes.io/docs/reference/command-line-tools-reference/kube-proxy/) to achieve the capabilities of the Cluster IP, replacing [node local dns cache ](https://kubernetes.io/docs/tasks/administer-cluster/nodelocaldns/) to achieve node-level dns capabilities, and replace [envoy](https://www.envoyproxy.io/) to achieve mesh-layer capabilities).
 
-![](/images/em-intro.png)
+<img src="./images/em-intro.png" style="zoom:80%;" />
 
 
 
@@ -38,9 +38,16 @@ EdgeMesh satisfies the new requirements in edge scenarios (e.g., limited edge re
 
 ## Architecture
 
-![](/images/em-arch.png)
+<img src="./images/em-arch.png" style="zoom:67%;" />
 
-To ensure the capability of service discovery in some edge devices with low-version kernels or low-version iptables, EdgeMesh adopts the userspace mode in its implementation. In addition, it also comes with a lightweight DNS server.
+To ensure the capability of service discovery in some edge devices with low-version kernels or low-version iptables, EdgeMesh adopts the userspace mode in its implementation of the traffic proxy. In addition, it also comes with a lightweight DNS resolver. As shown in the figure above, the core components of EdgeMesh include:
+
+- **Proxier**: Responsible for configuring the kernel's iptables rules, and intercepting requests to the EdgeMesh process
+- **DNS**: Built-in DNS resolver, which resolves the DNS request in the node into a service cluster IP
+- **Traffic**: A traffic forwarding module based on the Go-chassis framework, which is responsible for forwarding traffic between applications
+- **Controller**: Obtains metadata (e.g., Service, Endpoints, Pod, etc.) through the list-watch capability on the edge side of KubeEdge
+
+#### How It Works
 
 - Through the capability of list-watch on the edge of KubeEdge, EdgeMesh monitors the addition, deletion and modification of metadata (e.g., services and endpoints), and then creates iptables rules based on services and endpoints
 - EdgeMesh uses the same ways (e.g., Cluster IP, domain name) as the K8s Service to access services
@@ -53,7 +60,7 @@ To ensure the capability of service discovery in some edge devices with low-vers
 
 ## Key Features and Roadmap
 
-<table>
+<table align="center">
 	<tr>
 		<th align="center">Feature</th>
 		<th align="center" >Sub-Feature</th>
@@ -264,7 +271,7 @@ spec
 
 EdgeMesh ingress gateway provides a ability to access services in external edge nodes.
 
-![image-20210414152916134](/images/em-ig.png)
+![](./images/em-ig.png)
 
 #### HTTP Gateway
 
