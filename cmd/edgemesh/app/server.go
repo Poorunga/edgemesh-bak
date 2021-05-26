@@ -18,9 +18,8 @@ func NewEdgeMeshCommand() *cobra.Command {
 	opts := options.NewEdgeMeshOptions()
 	cmd := &cobra.Command{
 		Use: "edgemesh",
-		Long: `EdgeMesh is an edge servicemesh that supports intra-LAN service discovery. In the future, edge gateways,
-cross-edge-cloud service discovery, and cross-LAN service discovery will be added. EdgeMesh will interconnect with Istio.
-In the future, EdgeMesh will bring the advanced traffic governance and monitoring capabilities of Istio to Kubeedge.`,
+		Long: `EdgeMesh is a part of KubeEdge, and provides a simple network solution
+for the inter-communications between services at edge scenarios.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			config, err := opts.Config()
 			if err != nil {

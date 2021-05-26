@@ -3,16 +3,18 @@ module github.com/kubeedge/edgemesh
 go 1.14
 
 require (
-	github.com/astaxie/beego v1.12.3
 	github.com/buraksezer/consistent v0.0.0-20191006190839-693edf70fd72
 	github.com/cespare/xxhash v1.1.0
 	github.com/go-chassis/go-archaius v0.20.0
 	github.com/go-chassis/go-chassis v1.7.1
 	github.com/go-chassis/paas-lager v1.1.1 // indirect
+	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/kubeedge/beehive v0.0.0-20201125122335-cd19bca6e436
-	github.com/mattn/go-sqlite3 v2.0.3+incompatible
+	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
+	github.com/onsi/ginkgo v1.12.0 // indirect
 	github.com/spf13/cobra v1.0.0
 	github.com/vishvananda/netlink v1.1.0
+	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	istio.io/api v0.0.0-20210131044048-bfeb10697307
 	istio.io/client-go v0.0.0-20210218000043-b598dd019200
 	k8s.io/api v0.19.3

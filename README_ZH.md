@@ -49,7 +49,7 @@ EdgeMesh 满足边缘场景下的新需求（如边缘资源有限，边云网�
 <table align="center">
 	<tr>
 		<th align="center">功能</th>
-		<th align="center" >子功能</th>
+		<th align="center">子功能</th>
 		<th align="center">RoadMap</th>  
 	</tr >
 	<tr >
@@ -134,7 +134,7 @@ EdgeMesh 满足边缘场景下的新需求（如边缘资源有限，边云网�
 
 ## 架构
 
-<img src="./images/em-archi.png" style="zoom:67%;" />
+<img src="images/em-arch.png" style="zoom:67%;" />
 
 为了保证一些低版本内核、低版本 iptables 边缘设备的服务发现能力，EdgeMesh 在流量代理的实现上采用了 userspace 模式，除此之外还自带了一个轻量级的DNS解析器。如图所示，EdgeMesh的核心组件包括：
 
