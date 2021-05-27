@@ -44,13 +44,13 @@ EdgeMesh satisfies the new requirements in edge scenarios (e.g., limited edge re
 
 
 
-#### Key Features and Roadmap
+#### Key Features
 
 <table align="center">
 	<tr>
 		<th align="center">Feature</th>
 		<th align="center">Sub-Feature</th>
-		<th align="center">RoadMap</th>  
+		<th align="center">Realization Degree</th>  
 	</tr >
 	<tr >
 		<td align="center">Service Discovery</td>

@@ -44,13 +44,13 @@ EdgeMesh 满足边缘场景下的新需求（如边缘资源有限，边云网�
 
 
 
-#### 关键功能和Roadmap
+#### 关键功能
 
 <table align="center">
 	<tr>
 		<th align="center">功能</th>
 		<th align="center">子功能</th>
-		<th align="center">RoadMap</th>  
+		<th align="center">实现度</th>  
 	</tr >
 	<tr >
 		<td align="center">服务发现</td>
