@@ -1,5 +1,0 @@
-modules:
-  networking:
-    edgeGateway:
-      nic: "*"
-      excludeIP: "127.0.0.1"

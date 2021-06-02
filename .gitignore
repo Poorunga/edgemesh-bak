@@ -1,9 +1,0 @@
-.DS_Store
-/_python_build
-*/_build/
-venv/*
-*.pyc
-__pycache__
-*.swp
-.idea/*
-.gradle
